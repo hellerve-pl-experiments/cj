@@ -1,0 +1,12 @@
+{
+  "name": "cj-codegen",
+  "version": "1.0.0",
+  "description": "Code generator for cj JIT framework",
+  "private": true,
+  "scripts": {
+    "generate": "node codegen/generator.js"
+  },
+  "dependencies": {
+    "asmdb": "^0.0.3"
+  }
+}
