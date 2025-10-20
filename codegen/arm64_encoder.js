@@ -1822,8 +1822,21 @@ for (const [mnemonic, variants] of Object.entries(byMnemonic)) {
       output += `  }\n`;
 
     } else if (format === 'reg_reg_imm') {
-      // Register-immediate operation: dst = dst op imm (maps to: Rd=dst, Rn=dst, imm=src)
-      output += `  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {\n`;
+      const immVarNames = ['imm12', 'imm9', 'imm6', 'imm5', 'imm4', 'imm3', 'imm'];
+      const immVarPresent = immVarNames.some(name => findVariable(inst, name));
+      const hasImmediateField = fields.some(field => field && field.startsWith('imm'));
+      const usesImmediate =
+        immVarPresent ||
+        hasImmediateField ||
+        shField ||
+        optionField ||
+        imm3Field ||
+        imm9Field ||
+        (ops.length >= 3 && ops[2] && ops[2].max !== undefined);
+
+      if (usesImmediate) {
+        // Register-immediate operation: dst = dst op imm (maps to: Rd=dst, Rn=dst, imm=src)
+        output += `  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {\n`;
 
       // Check if this is an FP instruction
       const isFP = ops[0].type === 'fpreg';
@@ -1884,9 +1897,10 @@ for (const [mnemonic, variants] of Object.entries(byMnemonic)) {
         output += `    instr |= ((sh & ${bitMask(shField.width)}) << ${shField.lo});\n`;
       }
 
-      output += `    cj_add_u32(ctx, instr);\n`;
-      output += `    return;\n`;
-      output += `  }\n`;
+        output += `    cj_add_u32(ctx, instr);\n`;
+        output += `    return;\n`;
+        output += `  }\n`;
+      }
 
     } else if (format === 'reg_memory') {
       // Load/Store with memory operand: dst = [base + offset] or [base + index, LSL #shift]
@@ -2236,7 +2250,22 @@ for (const [mnemonic, variants] of Object.entries(byMnemonic)) {
       output += `    return;\n`;
       output += `  }\n`;
     } else if (format === 'reg_imm') {
-      output += `  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {\n`;
+      const immVarNames = ['imm', 'imm12', 'imm9', 'imm6', 'imm5', 'imm4', 'imm3'];
+      const immVarName = immVarNames.find(name => findVariable(inst, name));
+      const immVar = immVarName ? findVariable(inst, immVarName) : null;
+      const hasImmediateField = fields.some(field => field && field.startsWith('imm'));
+      const usesImmediate =
+        !!immVar ||
+        hasImmediateField ||
+        imm3Field ||
+        imm9Field ||
+        imm6Field ||
+        shField ||
+        (ops.length >= 2 && ops[1] && ops[1].max !== undefined) ||
+        !!findVariable(inst, 'hw');
+
+      if (usesImmediate) {
+        output += `  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {\n`;
       const isFP = ops[0].type === 'fpreg';
       const parseFunc = isFP ? 'arm64_parse_fp_reg' : 'arm64_parse_reg';
       const hasRdVar = !!findVariable(inst, 'Rd');
@@ -2309,9 +2338,10 @@ for (const [mnemonic, variants] of Object.entries(byMnemonic)) {
         output += `    instr &= ~(${bitMask(shField.width)} << ${shField.lo});\n`;
         output += `    instr |= ((sh & ${bitMask(shField.width)}) << ${shField.lo});\n`;
       }
-      output += `    cj_add_u32(ctx, instr);\n`;
-      output += `    return;\n`;
-      output += `  }\n`;
+        output += `    cj_add_u32(ctx, instr);\n`;
+        output += `    return;\n`;
+        output += `  }\n`;
+      }
     }
   }
 

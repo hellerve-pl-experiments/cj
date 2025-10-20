@@ -788,20 +788,6 @@ static inline void cj_and(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     cj_add_u32(ctx, instr);
     return;
   }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x92000000;
-    instr |= (1 << 31);
-    instr &= ~((1u << 5) - 1u);
-    instr |= (rd & ((1u << 5) - 1u));
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);
-    cj_add_u32(ctx, instr);
-    return;
-  }
 }
 
 static inline void cj_ands(cj_ctx* ctx, cj_operand dst, cj_operand src) {
@@ -857,20 +843,6 @@ static inline void cj_ands(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = rd;
     uint64_t imm = src.constant;
     uint32_t instr = 0x72000000;
-    instr &= ~((1u << 5) - 1u);
-    instr |= (rd & ((1u << 5) - 1u));
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0xF2000000;
-    instr |= (1 << 31);
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
@@ -3154,20 +3126,6 @@ static inline void cj_eor(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = rd;
     uint64_t imm = src.constant;
     uint32_t instr = 0x52000000;
-    instr &= ~((1u << 5) - 1u);
-    instr |= (rd & ((1u << 5) - 1u));
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0xD2000000;
-    instr |= (1 << 31);
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
@@ -6196,11 +6154,12 @@ static inline void cj_ld1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     cj_add_u32(ctx, instr);
     return;
   }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
+  if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
     int rn = rd;
-    uint64_t imm = src.constant;
+    int rm = arm64_parse_reg(src.reg);
+    if (rm < 0) return;
     uint32_t instr = 0x0CC02000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -6223,65 +6182,12 @@ static inline void cj_ld1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     cj_add_u32(ctx, instr);
     return;
   }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0CC02000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);
-    cj_add_u32(ctx, instr);
-    return;
-  }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
     int rn = rd;
     int rm = arm64_parse_reg(src.reg);
     if (rm < 0) return;
-    uint32_t instr = 0x0CC02000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0CC02000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    int rm = arm64_parse_reg(src.reg);
-    if (rm < 0) return;
-    uint32_t instr = 0x0CC02000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
     uint32_t instr = 0x0CC02000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -6326,17 +6232,6 @@ static inline void cj_ld1r(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
     instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0DDFC000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
     cj_add_u32(ctx, instr);
     return;
   }
@@ -6445,17 +6340,6 @@ static inline void cj_ld2(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     cj_add_u32(ctx, instr);
     return;
   }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0CDF8000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    cj_add_u32(ctx, instr);
-    return;
-  }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
@@ -6513,17 +6397,6 @@ static inline void cj_ld2r(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     cj_add_u32(ctx, instr);
     return;
   }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0DFFC000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    cj_add_u32(ctx, instr);
-    return;
-  }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
@@ -6572,17 +6445,6 @@ static inline void cj_ld3(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
     instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0CDF4000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
     cj_add_u32(ctx, instr);
     return;
   }
@@ -6643,17 +6505,6 @@ static inline void cj_ld3r(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     cj_add_u32(ctx, instr);
     return;
   }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0DDFE000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    cj_add_u32(ctx, instr);
-    return;
-  }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
@@ -6702,17 +6553,6 @@ static inline void cj_ld4(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
     instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0CDF0000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
     cj_add_u32(ctx, instr);
     return;
   }
@@ -6770,17 +6610,6 @@ static inline void cj_ld4r(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
     instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0DFFE000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
     cj_add_u32(ctx, instr);
     return;
   }
@@ -10720,21 +10549,6 @@ static inline void cj_lsl(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     cj_add_u32(ctx, instr);
     return;
   }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x53000000;
-    int sf = arm64_is_64bit(dst.reg) ? 1 : 0;
-    instr |= (sf << 31);
-    instr &= ~((1u << 5) - 1u);
-    instr |= (rd & ((1u << 5) - 1u));
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);
-    cj_add_u32(ctx, instr);
-    return;
-  }
 }
 
 static inline void cj_lslr(cj_ctx* ctx, cj_operand dst, cj_operand pred, cj_operand src1, cj_operand src2) {
@@ -11033,19 +10847,6 @@ static inline void cj_mov(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = 0;
     uint64_t raw_imm = src.constant;
     uint64_t imm = raw_imm;
-    uint32_t instr = 0xB20003E0;
-    if (arm64_is_64bit(dst.reg)) instr = 0xB20003E0;
-    instr &= ~((1u << 5) - 1u);
-    instr |= (rd & ((1u << 5) - 1u));
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = 0;
-    uint64_t raw_imm = src.constant;
-    uint64_t imm = raw_imm;
     uint32_t hw = (uint32_t)((raw_imm >> 0) & ((1u << 2) - 1u));
     uint32_t instr = 0x12800000;
     instr = arm64_is_64bit(dst.reg) ? 0x92800000 : 0x12800000;
@@ -11059,21 +10860,6 @@ static inline void cj_mov(cj_ctx* ctx, cj_operand dst, cj_operand src) {
 }
 
 static inline void cj_movi(cj_ctx* ctx, cj_operand dst, cj_operand src) {
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_fp_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = 0;
-    uint64_t raw_imm = src.constant;
-    uint64_t imm = raw_imm;
-    uint32_t instr = 0x0F000400;
-    int ftype = (dst.reg[0] == 'd') ? 0x1 : (dst.reg[0] == 's') ? 0x0 : 0x3;
-    instr &= ~(0x3 << 22);
-    instr |= (ftype << 22);
-    instr &= ~((1u << 5) - 1u);
-    instr |= (rd & ((1u << 5) - 1u));
-    cj_add_u32(ctx, instr);
-    return;
-  }
 }
 
 static inline void cj_movk(cj_ctx* ctx, cj_operand dst, cj_operand src) {
@@ -11635,20 +11421,6 @@ static inline void cj_orr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = rd;
     uint64_t imm = src.constant;
     uint32_t instr = 0x32000000;
-    instr &= ~((1u << 5) - 1u);
-    instr |= (rd & ((1u << 5) - 1u));
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0xB2000000;
-    instr |= (1 << 31);
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
@@ -13832,11 +13604,12 @@ static inline void cj_st1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     cj_add_u32(ctx, instr);
     return;
   }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
+  if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
     int rn = rd;
-    uint64_t imm = src.constant;
+    int rm = arm64_parse_reg(src.reg);
+    if (rm < 0) return;
     uint32_t instr = 0x0C802000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -13859,65 +13632,12 @@ static inline void cj_st1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     cj_add_u32(ctx, instr);
     return;
   }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0C802000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);
-    cj_add_u32(ctx, instr);
-    return;
-  }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
     int rn = rd;
     int rm = arm64_parse_reg(src.reg);
     if (rm < 0) return;
-    uint32_t instr = 0x0C802000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0C802000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    int rm = arm64_parse_reg(src.reg);
-    if (rm < 0) return;
-    uint32_t instr = 0x0C802000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
     uint32_t instr = 0x0C802000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -13983,17 +13703,6 @@ static inline void cj_st2(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
     instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0C9F8000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
     cj_add_u32(ctx, instr);
     return;
   }
@@ -14069,17 +13778,6 @@ static inline void cj_st3(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     cj_add_u32(ctx, instr);
     return;
   }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0C9F4000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    cj_add_u32(ctx, instr);
-    return;
-  }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
@@ -14137,17 +13835,6 @@ static inline void cj_st4(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
     instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0C9F0000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
     cj_add_u32(ctx, instr);
     return;
   }
@@ -16782,19 +16469,6 @@ static inline void cj_tst(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t raw_imm = src.constant;
     uint64_t imm = raw_imm;
     uint32_t instr = 0x7200001F;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t raw_imm = src.constant;
-    uint64_t imm = raw_imm;
-    uint32_t instr = 0xF200001F;
-    if (arm64_is_64bit(dst.reg)) instr = 0xF200001F;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rn & ((1u << 5) - 1u)) << 5);
     cj_add_u32(ctx, instr);
