@@ -71,6 +71,32 @@ int main(void) {
 
 you can find some more examples in the `examples` directory.
 
+### builder helpers
+
+For reusable building blocks, the optional `builder` helpers provide prologue/epilogue setup and structured loops:
+
+```c
+#include "builder.h"
+
+cj_ctx* cj = create_cj_ctx();
+cj_builder_frame frame;
+cj_builder_fn_prologue(cj, 0, &frame);
+
+cj_operand n = cj_builder_arg_int(cj, 0);
+cj_operand sum = cj_builder_scratch_reg(0);
+cj_operand i = cj_builder_scratch_reg(1);
+cj_operand one = cj_make_constant(1);
+
+cj_builder_clear(cj, sum);
+cj_builder_clear(cj, i);
+
+cj_builder_for_loop loop = cj_builder_for_begin(cj, i, one, n, one, CJ_COND_GE);
+cj_builder_add_assign(cj, sum, i);
+cj_builder_for_end(cj, &loop);
+
+cj_builder_return_value(cj, &frame, sum);
+```
+
 ### requirements
 
 - c11 compiler (gcc, clang)
