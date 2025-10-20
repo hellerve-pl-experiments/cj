@@ -77,7 +77,7 @@ jobs:
 
       - name: Build and run builder test harness
         run: |
-          ${{ matrix.cc }} -std=c11 -O2 -Isrc tests/test_harness_builder.c src/builder.c src/ctx.c -o jit_tests_builder
+          ${{ matrix.cc }} -std=c11 -O2 -Isrc tests/test_harness_builder.c src/ctx.c -o jit_tests_builder
           ./jit_tests_builder
 
       - name: Build and run SIMD example

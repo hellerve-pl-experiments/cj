@@ -1823,85 +1823,81 @@ for (const [mnemonic, variants] of Object.entries(byMnemonic)) {
 
     } else if (format === 'reg_reg_imm') {
       const immVarNames = ['imm12', 'imm9', 'imm6', 'imm5', 'imm4', 'imm3', 'imm'];
-      const immVarPresent = immVarNames.some(name => findVariable(inst, name));
+      const immVarName = immVarNames.find(name => findVariable(inst, name));
+      const immVar = immVarName ? findVariable(inst, immVarName) : null;
       const hasImmediateField = fields.some(field => field && field.startsWith('imm'));
       const usesImmediate =
-        immVarPresent ||
+        !!immVar ||
         hasImmediateField ||
         shField ||
         optionField ||
         imm3Field ||
-        imm9Field ||
-        (ops.length >= 3 && ops[2] && ops[2].max !== undefined);
+        imm9Field;
 
       if (usesImmediate) {
-        // Register-immediate operation: dst = dst op imm (maps to: Rd=dst, Rn=dst, imm=src)
         output += `  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {\n`;
-
-      // Check if this is an FP instruction
-      const isFP = ops[0].type === 'fpreg';
-      const parseFunc = isFP ? 'arm64_parse_fp_reg' : 'arm64_parse_reg';
-
-      output += `    int rd = ${parseFunc}(dst.reg);\n`;
-      output += `    if (rd < 0) return;\n`;
-      output += `    int rn = rd;\n`;
-      output += `    uint64_t imm = src.constant;\n`;
-
-      if (ops[2].max !== undefined) {
-        output += `    if (imm > ${ops[2].max}) return;\n`;
-      }
-
-      // Build the instruction encoding
-      // Complete encoding with all fixed bits already set in value from JSONL
-      const baseValue = parseInt(inst.value, 16);
-      output += `    uint32_t instr = ${inst.value};\n`;
-
-      // Set sf bit based on register size - only for integer instructions
-      if (!isFP) {
-        if (useRuntimeCheck) {
-          output += `    int sf = arm64_is_64bit(dst.reg) ? 1 : 0;\n`;
-          output += `    instr |= (sf << 31);\n`;
-        } else if (has64bit) {
-          output += `    instr |= (1 << 31);\n`;
-        } else {
+        const isFP = ops[0].type === 'fpreg';
+        const parseFunc = isFP ? 'arm64_parse_fp_reg' : 'arm64_parse_reg';
+        const needsImmValue = hasImmediateField || !!immVar;
+        const needsRangeCheck = ops.length >= 3 && ops[2] && ops[2].max !== undefined;
+        output += `    int rd = ${parseFunc}(dst.reg);\n`;
+        output += `    if (rd < 0) return;\n`;
+        output += `    int rn = rd;\n`;
+        if (needsImmValue) {
+          output += `    uint64_t imm = src.constant;\n`;
+          if (immVar && immVar.width < 64) {
+            output += `    imm &= ${bitMask(immVar.width)};\n`;
+          }
+          if (needsRangeCheck) {
+            output += `    if (imm > ${ops[2].max}) return;\n`;
+          }
+        } else if (needsRangeCheck) {
+          output += `    if (src.constant > ${ops[2].max}) return;\n`;
         }
-      } else {
-        // For FP instructions, set ftype bits [23:22] based on register size
-        output += `    int ftype = (dst.reg[0] == 'd') ? 0x1 : (dst.reg[0] == 's') ? 0x0 : 0x3;\n`;
-        output += `    instr &= ~(0x3 << 22);\n`;
-        output += `    instr |= (ftype << 22);\n`;
-      }
 
-      // Set register fields using metadata
-      const numRegOps = ops.filter(op => op.type === 'reg' || op.type === 'fpreg').length;
-      output += generateRegisterMappingFromMetadata(inst, numRegOps);
+        output += `    uint32_t instr = ${inst.value};\n`;
 
-      // Set immediate field (keep manual for now as it's not a register)
-      if (fields[2] === 'imm12') {
-        output += `    instr |= ((imm & 0xfff) << 10);\n`;
-      }
+        if (!isFP) {
+          if (useRuntimeCheck) {
+            output += `    int sf = arm64_is_64bit(dst.reg) ? 1 : 0;\n`;
+            output += `    instr |= (sf << 31);\n`;
+          } else if (has64bit) {
+            output += `    instr |= (1 << 31);\n`;
+          }
+        } else {
+          output += `    int ftype = (dst.reg[0] == 'd') ? 0x1 : (dst.reg[0] == 's') ? 0x0 : 0x3;\n`;
+          output += `    instr &= ~(0x3 << 22);\n`;
+          output += `    instr |= (ftype << 22);\n`;
+        }
 
-      if (shField) {
-        output += `    uint32_t sh = 0;\n`;
-        output += `    if (src.shift.kind != CJ_SHIFT_KIND_NONE || src.shift.has_amount) {\n`;
-        output += `      if (src.shift.kind != CJ_SHIFT_KIND_LSL) return;\n`;
-        output += `      if (src.shift.amount == 0) {\n`;
-        output += `        sh = 0;\n`;
-        output += `      } else if (src.shift.amount == 12) {\n`;
-        output += `        sh = 1;\n`;
-        output += `      } else {\n`;
-        output += `        return;\n`;
-        output += `      }\n`;
-        output += `    }\n`;
-        output += `    instr &= ~(${bitMask(shField.width)} << ${shField.lo});\n`;
-        output += `    instr |= ((sh & ${bitMask(shField.width)}) << ${shField.lo});\n`;
-      }
+        const numRegOps = ops.filter(op => op.type === 'reg' || op.type === 'fpreg').length;
+        output += generateRegisterMappingFromMetadata(inst, numRegOps);
+
+        if (fields[2] === 'imm12') {
+          const source = needsImmValue ? 'imm' : 'src.constant';
+          output += `    instr |= ((${source} & 0xfff) << 10);\n`;
+        }
+
+        if (shField) {
+          output += `    uint32_t sh = 0;\n`;
+          output += `    if (src.shift.kind != CJ_SHIFT_KIND_NONE || src.shift.has_amount) {\n`;
+          output += `      if (src.shift.kind != CJ_SHIFT_KIND_LSL) return;\n`;
+          output += `      if (src.shift.amount == 0) {\n`;
+          output += `        sh = 0;\n`;
+          output += `      } else if (src.shift.amount == 12) {\n`;
+          output += `        sh = 1;\n`;
+          output += `      } else {\n`;
+          output += `        return;\n`;
+          output += `      }\n`;
+          output += `    }\n`;
+          output += `    instr &= ~(${bitMask(shField.width)} << ${shField.lo});\n`;
+          output += `    instr |= ((sh & ${bitMask(shField.width)}) << ${shField.lo});\n`;
+        }
 
         output += `    cj_add_u32(ctx, instr);\n`;
         output += `    return;\n`;
         output += `  }\n`;
       }
-
     } else if (format === 'reg_memory') {
       // Load/Store with memory operand: dst = [base + offset] or [base + index, LSL #shift]
       output += `  if (src.type == CJ_MEMORY) {\n`;
@@ -2409,6 +2405,38 @@ output += `  }\n`;
 output += `  cj_emit_branch(ctx, base, label, 19, 5);\n`;
 output += `}\n\n`;
 
+function pruneUnusedDeclarations(text) {
+  const decls = [
+    { regex: /^\s*uint64_t imm = src\.constant;\s*$/, name: 'imm' },
+    { regex: /^\s*uint64_t raw_imm = src\.constant;\s*$/, name: 'raw_imm' },
+    { regex: /^\s*int rn = (?:rd|0);\s*$/, name: 'rn' },
+    { regex: /^\s*int is64 = arm64_is_64bit\([^)]+\);\s*$/, name: 'is64' }
+  ];
+
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length; ++i) {
+    for (const { regex, name } of decls) {
+      if (regex.test(lines[i])) {
+        let used = false;
+        for (let j = i + 1; j < lines.length; ++j) {
+          if (lines[j].trim() === 'return;') break;
+          if (new RegExp(`\\b${name}\\b`).test(lines[j])) {
+            used = true;
+            break;
+          }
+        }
+        if (!used) {
+          lines[i] = '';
+        }
+        break;
+      }
+    }
+  }
+  return lines.join('\n');
+}
+
+const finalOutput = pruneUnusedDeclarations(output);
+
 // Write to file
-fs.writeFileSync('src/arch/arm64/backend.h', output);
+fs.writeFileSync('src/arch/arm64/backend.h', finalOutput);
 console.error(`Generated src/arch/arm64/backend.h`);
