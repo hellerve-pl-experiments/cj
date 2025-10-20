@@ -3,10 +3,7 @@ name: CI (Linux)
 on:
   push:
     branches:
-      - main
-      - master
-  pull_request:
-
+      - "**"
 jobs:
   build-x86:
     runs-on: ubuntu-latest
