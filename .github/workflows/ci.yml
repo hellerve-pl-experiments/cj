@@ -1,0 +1,62 @@
+name: CI (Linux)
+
+on:
+  push:
+    branches:
+      - "**"
+jobs:
+  build-x86:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Regenerate x86 backend
+        run: node codegen/x86_encoder.js
+
+      - name: Build library
+        run: make dev
+
+      - name: Build and run x86 test harness
+        run: |
+          gcc -std=c11 -O2 -Isrc tests/test_harness_x86.c src/ctx.c -o jit_tests_x86
+          ./jit_tests_x86
+
+      - name: Build and run SIMD example
+        run: |
+          gcc -std=c11 -O2 -Isrc examples/simd.c src/ctx.c -o simd_example
+          ./simd_example
+
+  build-arm64:
+    runs-on: ubuntu-24.04-arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Regenerate ARM64 backend
+        run: node codegen/arm64_encoder.js
+
+      - name: Build library
+        run: make dev
+
+      - name: Build and run ARM64 harness (stub)
+        run: |
+          gcc -std=c11 -O2 -Isrc tests/test_harness_arm64.c src/ctx.c -o jit_tests_arm64
+          ./jit_tests_arm64
+
+      - name: Build and run SIMD example (fallback)
+        run: |
+          gcc -std=c11 -O2 -Isrc examples/simd.c src/ctx.c -o simd_example
+          ./simd_example
