@@ -313,7 +313,7 @@ function encodeFieldFromMetadata(field, cVarName) {
     code += `    instr |= (${cVarName} & ${mask});\n`;
   } else {
     code += `    instr &= ~(${mask} << ${lo});\n`;
-    code += `    instr |= ((${cVarName} & ${mask}) << ${lo});n`;
+    code += `    instr |= ((${cVarName} & ${mask}) << ${lo});\n`;
   }
 
   return code;
@@ -494,6 +494,7 @@ function buildVariantExpr(variants, isFP, operandType) {
 let output = `#pragma once
 
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 #include "../../ctx.h"
 #include "../../op.h"
@@ -842,7 +843,7 @@ for (const [mnemonic, variants] of Object.entries(byMnemonic)) {
       output += `    uint32_t instr = is64 ? ${stpValue64} : ${stpValue32};\n`;
     }
     output += `    \n`;
-    output += `    instr |= (reg1 & 0x1f);]\n`;
+    output += `    instr |= (reg1 & 0x1f);\n`;
     output += `    instr |= ((rn & 0x1f) << 5);\n`;
     output += `    instr |= ((reg2 & 0x1f) << 10);\n`;
     output += `    instr |= ((imm7 & 0x7f) << 15);\n`;

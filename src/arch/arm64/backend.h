@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 #include "../../ctx.h"
 #include "../../op.h"
@@ -285,8 +286,10 @@ static inline void cj_adc(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -304,8 +307,10 @@ static inline void cj_adcs(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -339,8 +344,10 @@ static inline void cj_add(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    uint32_t shift_mode = 0;
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    uint32_t shift_mode = 0;
     switch (src.shift.kind) {
       case CJ_SHIFT_KIND_NONE:
       case CJ_SHIFT_KIND_LSL:
@@ -382,7 +389,8 @@ static inline void cj_add(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr |= ((imm & 0xfff) << 10);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr |= ((imm & 0xfff) << 10);
     uint32_t sh = 0;
     if (src.shift.kind != CJ_SHIFT_KIND_NONE || src.shift.has_amount) {
       if (src.shift.kind != CJ_SHIFT_KIND_LSL) return;
@@ -409,8 +417,10 @@ static inline void cj_add(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
       uint32_t option = 0;
       switch (src.extend.kind) {
         case CJ_EXTEND_KIND_UXTB: option = 0; break;
@@ -474,7 +484,8 @@ static inline void cj_addpl(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    uint32_t shift_amount = (src.shift.kind == CJ_SHIFT_KIND_NONE && !src.shift.has_amount) ? 0u : src.shift.amount;
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    uint32_t shift_amount = (src.shift.kind == CJ_SHIFT_KIND_NONE && !src.shift.has_amount) ? 0u : src.shift.amount;
     if (arm64_is_64bit(dst.reg)) {
       if (shift_amount > 63u) return;
     } else {
@@ -500,8 +511,10 @@ static inline void cj_adds(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    uint32_t shift_mode = 0;
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    uint32_t shift_mode = 0;
     switch (src.shift.kind) {
       case CJ_SHIFT_KIND_NONE:
       case CJ_SHIFT_KIND_LSL:
@@ -543,7 +556,8 @@ static inline void cj_adds(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr |= ((imm & 0xfff) << 10);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr |= ((imm & 0xfff) << 10);
     uint32_t sh = 0;
     if (src.shift.kind != CJ_SHIFT_KIND_NONE || src.shift.has_amount) {
       if (src.shift.kind != CJ_SHIFT_KIND_LSL) return;
@@ -570,8 +584,10 @@ static inline void cj_adds(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
       uint32_t option = 0;
       switch (src.extend.kind) {
         case CJ_EXTEND_KIND_UXTB: option = 0; break;
@@ -612,7 +628,8 @@ static inline void cj_addvl(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    uint32_t shift_amount = (src.shift.kind == CJ_SHIFT_KIND_NONE && !src.shift.has_amount) ? 0u : src.shift.amount;
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    uint32_t shift_amount = (src.shift.kind == CJ_SHIFT_KIND_NONE && !src.shift.has_amount) ? 0u : src.shift.amount;
     if (arm64_is_64bit(dst.reg)) {
       if (shift_amount > 63u) return;
     } else {
@@ -724,8 +741,10 @@ static inline void cj_and(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    uint32_t shift_mode = 0;
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    uint32_t shift_mode = 0;
     switch (src.shift.kind) {
       case CJ_SHIFT_KIND_NONE:
       case CJ_SHIFT_KIND_LSL:
@@ -765,7 +784,8 @@ static inline void cj_and(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
@@ -778,7 +798,8 @@ static inline void cj_and(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -796,8 +817,10 @@ static inline void cj_ands(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    uint32_t shift_mode = 0;
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    uint32_t shift_mode = 0;
     switch (src.shift.kind) {
       case CJ_SHIFT_KIND_NONE:
       case CJ_SHIFT_KIND_LSL:
@@ -837,7 +860,8 @@ static inline void cj_ands(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
@@ -850,7 +874,8 @@ static inline void cj_ands(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -871,8 +896,10 @@ static inline void cj_asr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
@@ -886,7 +913,8 @@ static inline void cj_asr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -954,8 +982,10 @@ static inline void cj_asrv(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -973,7 +1003,8 @@ static inline void cj_autda(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -999,7 +1030,8 @@ static inline void cj_autdb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -1025,7 +1057,8 @@ static inline void cj_autia(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -1063,7 +1096,8 @@ static inline void cj_autib(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -1127,7 +1161,8 @@ static inline void cj_bfcvt(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -1227,7 +1262,8 @@ static inline void cj_bfm(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -1323,8 +1359,10 @@ static inline void cj_bic(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    uint32_t shift_mode = 0;
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    uint32_t shift_mode = 0;
     switch (src.shift.kind) {
       case CJ_SHIFT_KIND_NONE:
       case CJ_SHIFT_KIND_LSL:
@@ -1370,8 +1408,10 @@ static inline void cj_bics(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    uint32_t shift_mode = 0;
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    uint32_t shift_mode = 0;
     switch (src.shift.kind) {
       case CJ_SHIFT_KIND_NONE:
       case CJ_SHIFT_KIND_LSL:
@@ -1480,7 +1520,8 @@ static inline void cj_blraa(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0xD63F0800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -1506,7 +1547,8 @@ static inline void cj_blrab(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0xD63F0800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -1543,7 +1585,8 @@ static inline void cj_braa(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0xD61F0800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -1569,7 +1612,8 @@ static inline void cj_brab(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0xD61F0800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -2016,7 +2060,8 @@ static inline void cj_ccmn(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint32_t instr = 0x3A400800;
     instr = arm64_is_64bit(dst.reg) ? 0xBA400800 : 0x3A400800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
     instr |= ((uint32_t)(imm & ((1u << 5) - 1u))) << 16;
     cj_add_u32(ctx, instr);
     return;
@@ -2034,7 +2079,8 @@ static inline void cj_ccmp(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint32_t instr = 0x7A400800;
     instr = arm64_is_64bit(dst.reg) ? 0xFA400800 : 0x7A400800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
     instr |= ((uint32_t)(imm & ((1u << 5) - 1u))) << 16;
     cj_add_u32(ctx, instr);
     return;
@@ -2091,7 +2137,8 @@ static inline void cj_cls(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -2122,7 +2169,8 @@ static inline void cj_clz(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -2291,8 +2339,10 @@ static inline void cj_cmn(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint32_t instr = 0x2B00001F;
     instr = arm64_is_64bit(dst.reg) ? 0xAB00001F : 0x2B00001F;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    uint32_t shift_mode = 0;
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    uint32_t shift_mode = 0;
     switch (src.shift.kind) {
       case CJ_SHIFT_KIND_NONE:
       case CJ_SHIFT_KIND_LSL:
@@ -2332,7 +2382,8 @@ static inline void cj_cmn(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint32_t instr = 0x3100001F;
     instr = arm64_is_64bit(dst.reg) ? 0xB100001F : 0x3100001F;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 12) - 1u) << 10);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 12) - 1u) << 10);
     instr |= ((uint32_t)(imm & ((1u << 12) - 1u))) << 10;
     uint32_t sh = 0;
     if (src.shift.kind != CJ_SHIFT_KIND_NONE || src.shift.has_amount) {
@@ -2357,8 +2408,10 @@ static inline void cj_cmn(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x2B20001F;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
       uint32_t option = 0;
       switch (src.extend.kind) {
         case CJ_EXTEND_KIND_UXTB: option = 0; break;
@@ -2395,8 +2448,10 @@ static inline void cj_cmp(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint32_t instr = 0x6B00001F;
     instr = arm64_is_64bit(dst.reg) ? 0xEB00001F : 0x6B00001F;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    uint32_t shift_mode = 0;
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    uint32_t shift_mode = 0;
     switch (src.shift.kind) {
       case CJ_SHIFT_KIND_NONE:
       case CJ_SHIFT_KIND_LSL:
@@ -2436,7 +2491,8 @@ static inline void cj_cmp(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint32_t instr = 0x7100001F;
     instr = arm64_is_64bit(dst.reg) ? 0xF100001F : 0x7100001F;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 12) - 1u) << 10);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 12) - 1u) << 10);
     instr |= ((uint32_t)(imm & ((1u << 12) - 1u))) << 10;
     uint32_t sh = 0;
     if (src.shift.kind != CJ_SHIFT_KIND_NONE || src.shift.has_amount) {
@@ -2461,8 +2517,10 @@ static inline void cj_cmp(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x6B20001F;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
       uint32_t option = 0;
       switch (src.extend.kind) {
         case CJ_EXTEND_KIND_UXTB: option = 0; break;
@@ -2661,8 +2719,10 @@ static inline void cj_crc32b(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -2678,8 +2738,10 @@ static inline void cj_crc32h(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -2695,8 +2757,10 @@ static inline void cj_crc32w(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -2713,8 +2777,10 @@ static inline void cj_crc32x(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -2730,8 +2796,10 @@ static inline void cj_crc32cb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -2747,8 +2815,10 @@ static inline void cj_crc32ch(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -2764,8 +2834,10 @@ static inline void cj_crc32cw(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -2782,8 +2854,10 @@ static inline void cj_crc32cx(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -2805,8 +2879,10 @@ static inline void cj_csel(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -2830,8 +2906,10 @@ static inline void cj_csinc(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -2849,8 +2927,10 @@ static inline void cj_csinv(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -2868,8 +2948,10 @@ static inline void cj_csneg(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -2951,8 +3033,10 @@ static inline void cj_eon(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    uint32_t shift_mode = 0;
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    uint32_t shift_mode = 0;
     switch (src.shift.kind) {
       case CJ_SHIFT_KIND_NONE:
       case CJ_SHIFT_KIND_LSL:
@@ -3030,8 +3114,10 @@ static inline void cj_eor(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    uint32_t shift_mode = 0;
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    uint32_t shift_mode = 0;
     switch (src.shift.kind) {
       case CJ_SHIFT_KIND_NONE:
       case CJ_SHIFT_KIND_LSL:
@@ -3071,7 +3157,8 @@ static inline void cj_eor(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
@@ -3084,7 +3171,8 @@ static inline void cj_eor(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -3127,8 +3215,10 @@ static inline void cj_extr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -3163,8 +3253,10 @@ static inline void cj_fabd(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -3197,7 +3289,8 @@ static inline void cj_fabs(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -3232,8 +3325,10 @@ static inline void cj_facge(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -3268,8 +3363,10 @@ static inline void cj_facgt(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -3310,8 +3407,10 @@ static inline void cj_fadd(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -3415,8 +3514,10 @@ static inline void cj_fcmeq(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount && (dst.reg[0] == 's' || dst.reg[0] == 'd' || dst.reg[0] == 'h') && (src.reg[0] == 's' || src.reg[0] == 'd' || src.reg[0] == 'h')) {
@@ -3431,7 +3532,8 @@ static inline void cj_fcmeq(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -3481,8 +3583,10 @@ static inline void cj_fcmgt(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount && (dst.reg[0] == 's' || dst.reg[0] == 'd' || dst.reg[0] == 'h') && (src.reg[0] == 's' || src.reg[0] == 'd' || src.reg[0] == 'h')) {
@@ -3497,7 +3601,8 @@ static inline void cj_fcmgt(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -3547,8 +3652,10 @@ static inline void cj_fcmge(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount && (dst.reg[0] == 's' || dst.reg[0] == 'd' || dst.reg[0] == 'h') && (src.reg[0] == 's' || src.reg[0] == 'd' || src.reg[0] == 'h')) {
@@ -3563,7 +3670,8 @@ static inline void cj_fcmge(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -3644,8 +3752,10 @@ static inline void cj_fcmp(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~(0x3 << 22);
     instr |= (ftype << 22);
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -3661,8 +3771,10 @@ static inline void cj_fcmpe(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~(0x3 << 22);
     instr |= (ftype << 22);
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -3684,8 +3796,10 @@ static inline void cj_fcsel(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -3703,7 +3817,8 @@ static inline void cj_fcvt(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -3736,7 +3851,8 @@ static inline void cj_fcvtas(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount && (dst.reg[0] == 'x' || dst.reg[0] == 'w') && (src.reg[0] == 's' || src.reg[0] == 'd' || src.reg[0] == 'h')) {
@@ -3748,7 +3864,8 @@ static inline void cj_fcvtas(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -3781,7 +3898,8 @@ static inline void cj_fcvtau(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount && (dst.reg[0] == 'x' || dst.reg[0] == 'w') && (src.reg[0] == 's' || src.reg[0] == 'd' || src.reg[0] == 'h')) {
@@ -3793,7 +3911,8 @@ static inline void cj_fcvtau(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -3862,7 +3981,8 @@ static inline void cj_fcvtms(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount && (dst.reg[0] == 'x' || dst.reg[0] == 'w') && (src.reg[0] == 's' || src.reg[0] == 'd' || src.reg[0] == 'h')) {
@@ -3874,7 +3994,8 @@ static inline void cj_fcvtms(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -3907,7 +4028,8 @@ static inline void cj_fcvtmu(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount && (dst.reg[0] == 'x' || dst.reg[0] == 'w') && (src.reg[0] == 's' || src.reg[0] == 'd' || src.reg[0] == 'h')) {
@@ -3919,7 +4041,8 @@ static inline void cj_fcvtmu(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -3988,7 +4111,8 @@ static inline void cj_fcvtns(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount && (dst.reg[0] == 'x' || dst.reg[0] == 'w') && (src.reg[0] == 's' || src.reg[0] == 'd' || src.reg[0] == 'h')) {
@@ -4000,7 +4124,8 @@ static inline void cj_fcvtns(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -4033,7 +4158,8 @@ static inline void cj_fcvtnu(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount && (dst.reg[0] == 'x' || dst.reg[0] == 'w') && (src.reg[0] == 's' || src.reg[0] == 'd' || src.reg[0] == 'h')) {
@@ -4045,7 +4171,8 @@ static inline void cj_fcvtnu(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -4078,7 +4205,8 @@ static inline void cj_fcvtps(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount && (dst.reg[0] == 'x' || dst.reg[0] == 'w') && (src.reg[0] == 's' || src.reg[0] == 'd' || src.reg[0] == 'h')) {
@@ -4090,7 +4218,8 @@ static inline void cj_fcvtps(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -4123,7 +4252,8 @@ static inline void cj_fcvtpu(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount && (dst.reg[0] == 'x' || dst.reg[0] == 'w') && (src.reg[0] == 's' || src.reg[0] == 'd' || src.reg[0] == 'h')) {
@@ -4135,7 +4265,8 @@ static inline void cj_fcvtpu(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -4188,7 +4319,8 @@ static inline void cj_fcvtzs(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount && (dst.reg[0] == 'x' || dst.reg[0] == 'w') && (src.reg[0] == 's' || src.reg[0] == 'd' || src.reg[0] == 'h')) {
@@ -4200,7 +4332,8 @@ static inline void cj_fcvtzs(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -4233,7 +4366,8 @@ static inline void cj_fcvtzu(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount && (dst.reg[0] == 'x' || dst.reg[0] == 'w') && (src.reg[0] == 's' || src.reg[0] == 'd' || src.reg[0] == 'h')) {
@@ -4245,7 +4379,8 @@ static inline void cj_fcvtzu(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -4280,8 +4415,10 @@ static inline void cj_fdiv(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -4327,7 +4464,8 @@ static inline void cj_fjcvtzs(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -4371,8 +4509,10 @@ static inline void cj_fmadd(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -4407,8 +4547,10 @@ static inline void cj_fmax(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -4443,8 +4585,10 @@ static inline void cj_fmaxnm(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -4531,8 +4675,10 @@ static inline void cj_fmin(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -4567,8 +4713,10 @@ static inline void cj_fminnm(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -4790,7 +4938,8 @@ static inline void cj_fmov(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount && (dst.reg[0] == 'x' || dst.reg[0] == 'w') && (src.reg[0] == 's' || src.reg[0] == 'd' || src.reg[0] == 'h')) {
@@ -4802,7 +4951,8 @@ static inline void cj_fmov(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount && (dst.reg[0] == 's' || dst.reg[0] == 'd' || dst.reg[0] == 'h') && (src.reg[0] == 'x' || src.reg[0] == 'w')) {
@@ -4820,7 +4970,8 @@ static inline void cj_fmov(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
@@ -4882,8 +5033,10 @@ static inline void cj_fmsub(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -4918,8 +5071,10 @@ static inline void cj_fmul(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -4954,8 +5109,10 @@ static inline void cj_fmulx(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -4988,7 +5145,8 @@ static inline void cj_fneg(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -5032,8 +5190,10 @@ static inline void cj_fnmadd(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -5127,8 +5287,10 @@ static inline void cj_fnmsub(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -5147,8 +5309,10 @@ static inline void cj_fnmul(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -5203,8 +5367,10 @@ static inline void cj_frecps(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -5257,7 +5423,8 @@ static inline void cj_frint32x(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -5290,7 +5457,8 @@ static inline void cj_frint32z(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -5323,7 +5491,8 @@ static inline void cj_frint64x(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -5356,7 +5525,8 @@ static inline void cj_frint64z(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -5389,7 +5559,8 @@ static inline void cj_frinta(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -5422,7 +5593,8 @@ static inline void cj_frinti(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -5455,7 +5627,8 @@ static inline void cj_frintx(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -5488,7 +5661,8 @@ static inline void cj_frintn(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -5521,7 +5695,8 @@ static inline void cj_frintz(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -5554,7 +5729,8 @@ static inline void cj_frintm(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -5587,7 +5763,8 @@ static inline void cj_frintp(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -5642,8 +5819,10 @@ static inline void cj_frsqrts(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -5701,7 +5880,8 @@ static inline void cj_fsqrt(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -5736,8 +5916,10 @@ static inline void cj_fsub(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -5915,7 +6097,8 @@ static inline void cj_ld1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x0C407000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -5945,7 +6128,8 @@ static inline void cj_ld1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x0C40A000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -5975,7 +6159,8 @@ static inline void cj_ld1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x0C406000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -6005,7 +6190,8 @@ static inline void cj_ld1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x0C402000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -6017,8 +6203,10 @@ static inline void cj_ld1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x0CC02000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
@@ -6029,8 +6217,10 @@ static inline void cj_ld1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x0CC02000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
@@ -6040,8 +6230,10 @@ static inline void cj_ld1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x0CC02000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
@@ -6052,8 +6244,10 @@ static inline void cj_ld1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x0CC02000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
@@ -6063,8 +6257,10 @@ static inline void cj_ld1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x0CC02000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
@@ -6075,8 +6271,10 @@ static inline void cj_ld1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x0CC02000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
@@ -6086,8 +6284,10 @@ static inline void cj_ld1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x0CC02000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
@@ -6098,8 +6298,10 @@ static inline void cj_ld1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x0CC02000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -6121,7 +6323,8 @@ static inline void cj_ld1r(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x0D40C000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -6133,7 +6336,8 @@ static inline void cj_ld1r(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x0DDFC000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
@@ -6144,8 +6348,10 @@ static inline void cj_ld1r(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x0DC0C000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -6233,7 +6439,8 @@ static inline void cj_ld2(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x0C408000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -6245,7 +6452,8 @@ static inline void cj_ld2(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x0CDF8000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
@@ -6256,8 +6464,10 @@ static inline void cj_ld2(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x0CC08000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -6297,7 +6507,8 @@ static inline void cj_ld2r(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x0D60C000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -6309,7 +6520,8 @@ static inline void cj_ld2r(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x0DFFC000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
@@ -6320,8 +6532,10 @@ static inline void cj_ld2r(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x0DE0C000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -6355,7 +6569,8 @@ static inline void cj_ld3(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x0C404000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -6367,7 +6582,8 @@ static inline void cj_ld3(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x0CDF4000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
@@ -6378,8 +6594,10 @@ static inline void cj_ld3(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x0CC04000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -6419,7 +6637,8 @@ static inline void cj_ld3r(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x0D40E000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -6431,7 +6650,8 @@ static inline void cj_ld3r(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x0DDFE000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
@@ -6442,8 +6662,10 @@ static inline void cj_ld3r(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x0DC0E000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -6477,7 +6699,8 @@ static inline void cj_ld4(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x0C400000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -6489,7 +6712,8 @@ static inline void cj_ld4(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x0CDF0000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
@@ -6500,8 +6724,10 @@ static inline void cj_ld4(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x0CC00000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -6541,7 +6767,8 @@ static inline void cj_ld4r(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x0D60E000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -6553,7 +6780,8 @@ static inline void cj_ld4r(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x0DFFE000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
@@ -6564,8 +6792,10 @@ static inline void cj_ld4r(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x0DE0E000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -6902,7 +7132,8 @@ static inline void cj_ldapur(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x99400000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -6917,7 +7148,8 @@ static inline void cj_ldapurb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x19400000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -6932,7 +7164,8 @@ static inline void cj_ldapurh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x59400000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -6947,7 +7180,8 @@ static inline void cj_ldapursb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x19C00000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -6962,7 +7196,8 @@ static inline void cj_ldapursh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x59C00000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -6977,7 +7212,8 @@ static inline void cj_ldapursw(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x99800000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -7790,7 +8026,7 @@ static inline void cj_ldnp(cj_ctx* ctx, cj_operand rt1, cj_operand rt2, cj_opera
     
     uint32_t instr = is64 ? 0xA9400000 : 0x29400000;
     
-    instr |= (reg1 & 0x1f);]
+    instr |= (reg1 & 0x1f);
     instr |= ((rn & 0x1f) << 5);
     instr |= ((reg2 & 0x1f) << 10);
     instr |= ((imm7 & 0x7f) << 15);
@@ -7831,7 +8067,7 @@ static inline void cj_ldp(cj_ctx* ctx, cj_operand rt1, cj_operand rt2, cj_operan
     
     uint32_t instr = is64 ? 0xA9400000 : 0x29400000;
     
-    instr |= (reg1 & 0x1f);]
+    instr |= (reg1 & 0x1f);
     instr |= ((rn & 0x1f) << 5);
     instr |= ((reg2 & 0x1f) << 10);
     instr |= ((imm7 & 0x7f) << 15);
@@ -7860,7 +8096,7 @@ static inline void cj_ldpsw(cj_ctx* ctx, cj_operand rt1, cj_operand rt2, cj_oper
     
     uint32_t instr = is64 ? 0xA9400000 : 0x29400000;
     
-    instr |= (reg1 & 0x1f);]
+    instr |= (reg1 & 0x1f);
     instr |= ((rn & 0x1f) << 5);
     instr |= ((reg2 & 0x1f) << 10);
     instr |= ((imm7 & 0x7f) << 15);
@@ -8020,8 +8256,10 @@ static inline void cj_ldr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0xB8600800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
       uint32_t option = 0;
       switch (src.extend.kind) {
         case CJ_EXTEND_KIND_UXTB: option = 0; break;
@@ -8048,8 +8286,10 @@ static inline void cj_ldr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0xF8600800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
       uint32_t option = 0;
       switch (src.extend.kind) {
         case CJ_EXTEND_KIND_UXTB: option = 0; break;
@@ -8256,8 +8496,10 @@ static inline void cj_ldrb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x38600800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
       uint32_t option = 0;
       switch (src.extend.kind) {
         case CJ_EXTEND_KIND_UXTB: option = 0; break;
@@ -8284,8 +8526,10 @@ static inline void cj_ldrb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x38606800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -8406,8 +8650,10 @@ static inline void cj_ldrh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x78600800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
       uint32_t option = 0;
       switch (src.extend.kind) {
         case CJ_EXTEND_KIND_UXTB: option = 0; break;
@@ -8528,8 +8774,10 @@ static inline void cj_ldrsb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x38E00860;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
       uint32_t option = 0;
       switch (src.extend.kind) {
         case CJ_EXTEND_KIND_UXTB: option = 0; break;
@@ -8556,8 +8804,10 @@ static inline void cj_ldrsb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x38A00800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
       uint32_t option = 0;
       switch (src.extend.kind) {
         case CJ_EXTEND_KIND_UXTB: option = 0; break;
@@ -8694,8 +8944,10 @@ static inline void cj_ldrsh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x78E00800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
       uint32_t option = 0;
       switch (src.extend.kind) {
         case CJ_EXTEND_KIND_UXTB: option = 0; break;
@@ -8834,8 +9086,10 @@ static inline void cj_ldrsw(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0xB8A00800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
       uint32_t option = 0;
       switch (src.extend.kind) {
         case CJ_EXTEND_KIND_UXTB: option = 0; break;
@@ -9656,7 +9910,8 @@ static inline void cj_ldtr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0xB8400800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -9671,7 +9926,8 @@ static inline void cj_ldtrb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x38400800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -9686,7 +9942,8 @@ static inline void cj_ldtrh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x78400800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -9701,7 +9958,8 @@ static inline void cj_ldtrsb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x38C00800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -9716,7 +9974,8 @@ static inline void cj_ldtrsh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x78C00800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -9731,7 +9990,8 @@ static inline void cj_ldtrsw(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0xB8800800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -10274,7 +10534,8 @@ static inline void cj_ldur(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0xB8400000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -10289,7 +10550,8 @@ static inline void cj_ldurb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x38400000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -10304,7 +10566,8 @@ static inline void cj_ldurh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x78400000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -10319,7 +10582,8 @@ static inline void cj_ldursb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x38C00000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -10334,7 +10598,8 @@ static inline void cj_ldursh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x78C00000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -10349,7 +10614,8 @@ static inline void cj_ldursw(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0xB8800000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -10448,8 +10714,10 @@ static inline void cj_lsl(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
@@ -10463,7 +10731,8 @@ static inline void cj_lsl(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -10506,8 +10775,10 @@ static inline void cj_lslv(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -10525,8 +10796,10 @@ static inline void cj_lsr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
@@ -10540,7 +10813,8 @@ static inline void cj_lsr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -10583,8 +10857,10 @@ static inline void cj_lsrv(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -10627,8 +10903,10 @@ static inline void cj_madd(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -10684,8 +10962,10 @@ static inline void cj_mneg(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -10717,7 +10997,8 @@ static inline void cj_mov(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
@@ -10730,7 +11011,8 @@ static inline void cj_mov(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
@@ -10932,8 +11214,10 @@ static inline void cj_msub(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -10967,8 +11251,10 @@ static inline void cj_mul(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -10999,7 +11285,8 @@ static inline void cj_mvn(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    uint32_t shift_mode = 0;
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    uint32_t shift_mode = 0;
     switch (src.shift.kind) {
       case CJ_SHIFT_KIND_NONE:
       case CJ_SHIFT_KIND_LSL:
@@ -11067,7 +11354,8 @@ static inline void cj_neg(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    uint32_t shift_mode = 0;
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    uint32_t shift_mode = 0;
     switch (src.shift.kind) {
       case CJ_SHIFT_KIND_NONE:
       case CJ_SHIFT_KIND_LSL:
@@ -11110,7 +11398,8 @@ static inline void cj_negs(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    uint32_t shift_mode = 0;
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    uint32_t shift_mode = 0;
     switch (src.shift.kind) {
       case CJ_SHIFT_KIND_NONE:
       case CJ_SHIFT_KIND_LSL:
@@ -11153,7 +11442,8 @@ static inline void cj_ngc(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -11169,7 +11459,8 @@ static inline void cj_ngcs(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -11236,8 +11527,10 @@ static inline void cj_orn(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    uint32_t shift_mode = 0;
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    uint32_t shift_mode = 0;
     switch (src.shift.kind) {
       case CJ_SHIFT_KIND_NONE:
       case CJ_SHIFT_KIND_LSL:
@@ -11302,8 +11595,10 @@ static inline void cj_orr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    uint32_t shift_mode = 0;
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    uint32_t shift_mode = 0;
     switch (src.shift.kind) {
       case CJ_SHIFT_KIND_NONE:
       case CJ_SHIFT_KIND_LSL:
@@ -11343,7 +11638,8 @@ static inline void cj_orr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
@@ -11356,7 +11652,8 @@ static inline void cj_orr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -11377,7 +11674,8 @@ static inline void cj_pacda(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -11403,7 +11701,8 @@ static inline void cj_pacdb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -11430,8 +11729,10 @@ static inline void cj_pacga(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -11446,7 +11747,8 @@ static inline void cj_pacia(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -11484,7 +11786,8 @@ static inline void cj_pacib(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -11628,7 +11931,8 @@ static inline void cj_rbit(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -11669,7 +11973,8 @@ static inline void cj_rev(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -11700,7 +12005,8 @@ static inline void cj_rev16(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -11730,7 +12036,8 @@ static inline void cj_rev32(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -11760,7 +12067,8 @@ static inline void cj_rev64(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -11855,7 +12163,8 @@ static inline void cj_ror(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
@@ -11870,8 +12179,10 @@ static inline void cj_ror(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -11889,8 +12200,10 @@ static inline void cj_rorv(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -12036,8 +12349,10 @@ static inline void cj_sbc(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -12055,8 +12370,10 @@ static inline void cj_sbcs(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -12076,7 +12393,8 @@ static inline void cj_sbfm(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -12112,7 +12430,8 @@ static inline void cj_scvtf(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount && (dst.reg[0] == 's' || dst.reg[0] == 'd' || dst.reg[0] == 'h') && (src.reg[0] == 'x' || src.reg[0] == 'w')) {
@@ -12130,7 +12449,8 @@ static inline void cj_scvtf(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -12148,8 +12468,10 @@ static inline void cj_sdiv(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -12738,8 +13060,10 @@ static inline void cj_smaddl(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -12874,8 +13198,10 @@ static inline void cj_smnegl(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -12894,8 +13220,10 @@ static inline void cj_smsubl(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -12911,8 +13239,10 @@ static inline void cj_smulh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -12928,8 +13258,10 @@ static inline void cj_smull(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -13401,7 +13733,8 @@ static inline void cj_st1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x0C007000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -13431,7 +13764,8 @@ static inline void cj_st1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x0C00A000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -13461,7 +13795,8 @@ static inline void cj_st1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x0C006000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -13491,7 +13826,8 @@ static inline void cj_st1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x0C002000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -13503,8 +13839,10 @@ static inline void cj_st1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x0C802000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
@@ -13515,8 +13853,10 @@ static inline void cj_st1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x0C802000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
@@ -13526,8 +13866,10 @@ static inline void cj_st1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x0C802000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
@@ -13538,8 +13880,10 @@ static inline void cj_st1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x0C802000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
@@ -13549,8 +13893,10 @@ static inline void cj_st1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x0C802000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
@@ -13561,8 +13907,10 @@ static inline void cj_st1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x0C802000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
@@ -13572,8 +13920,10 @@ static inline void cj_st1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x0C802000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
@@ -13584,8 +13934,10 @@ static inline void cj_st1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x0C802000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -13628,7 +13980,8 @@ static inline void cj_st2(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x0C008000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -13640,7 +13993,8 @@ static inline void cj_st2(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x0C9F8000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
@@ -13651,8 +14005,10 @@ static inline void cj_st2(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x0C808000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -13707,7 +14063,8 @@ static inline void cj_st3(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x0C004000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -13719,7 +14076,8 @@ static inline void cj_st3(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x0C9F4000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
@@ -13730,8 +14088,10 @@ static inline void cj_st3(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x0C804000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -13774,7 +14134,8 @@ static inline void cj_st4(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x0C000000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -13786,7 +14147,8 @@ static inline void cj_st4(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x0C9F0000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
@@ -13797,8 +14159,10 @@ static inline void cj_st4(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x0C800000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -13823,8 +14187,10 @@ static inline void cj_stadd(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0xB820001F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -13837,8 +14203,10 @@ static inline void cj_staddl(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0xB820001F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -13851,8 +14219,10 @@ static inline void cj_staddb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x3820001F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -13865,8 +14235,10 @@ static inline void cj_staddlb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x3860001F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -13879,8 +14251,10 @@ static inline void cj_staddh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x7820001F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -13893,8 +14267,10 @@ static inline void cj_staddlh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x7860001F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -13907,8 +14283,10 @@ static inline void cj_stclr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0xB820101F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -13921,8 +14299,10 @@ static inline void cj_stclrl(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0xB820101F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -13935,8 +14315,10 @@ static inline void cj_stclrb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x3820101F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -13949,8 +14331,10 @@ static inline void cj_stclrlb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x3860101F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -13963,8 +14347,10 @@ static inline void cj_stclrh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x7820101F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -13977,8 +14363,10 @@ static inline void cj_stclrlh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x7860101F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -13991,8 +14379,10 @@ static inline void cj_steor(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0xB820201F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -14005,8 +14395,10 @@ static inline void cj_steorl(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0xB820201F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -14019,8 +14411,10 @@ static inline void cj_steorb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x3820201F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -14033,8 +14427,10 @@ static inline void cj_steorlb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x3860201F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -14047,8 +14443,10 @@ static inline void cj_steorh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x7820201F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -14061,8 +14459,10 @@ static inline void cj_steorlh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x7860201F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -14226,7 +14626,8 @@ static inline void cj_stlur(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x99000000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -14241,7 +14642,8 @@ static inline void cj_stlurb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x19000000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -14256,7 +14658,8 @@ static inline void cj_stlurh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x59000000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -14373,7 +14776,7 @@ static inline void cj_stnp(cj_ctx* ctx, cj_operand rt1, cj_operand rt2, cj_opera
     
     uint32_t instr = is64 ? 0xA9000000 : 0x29000000;
     
-    instr |= (reg1 & 0x1f);]
+    instr |= (reg1 & 0x1f);
     instr |= ((rn & 0x1f) << 5);
     instr |= ((reg2 & 0x1f) << 10);
     instr |= ((imm7 & 0x7f) << 15);
@@ -14414,7 +14817,7 @@ static inline void cj_stp(cj_ctx* ctx, cj_operand rt1, cj_operand rt2, cj_operan
     
     uint32_t instr = is64 ? 0xA9000000 : 0x29000000;
     
-    instr |= (reg1 & 0x1f);]
+    instr |= (reg1 & 0x1f);
     instr |= ((rn & 0x1f) << 5);
     instr |= ((reg2 & 0x1f) << 10);
     instr |= ((imm7 & 0x7f) << 15);
@@ -14574,8 +14977,10 @@ static inline void cj_str(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0xB8200800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
       uint32_t option = 0;
       switch (src.extend.kind) {
         case CJ_EXTEND_KIND_UXTB: option = 0; break;
@@ -14602,8 +15007,10 @@ static inline void cj_str(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0xF8200800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
       uint32_t option = 0;
       switch (src.extend.kind) {
         case CJ_EXTEND_KIND_UXTB: option = 0; break;
@@ -14724,8 +15131,10 @@ static inline void cj_strb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x38200800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
       uint32_t option = 0;
       switch (src.extend.kind) {
         case CJ_EXTEND_KIND_UXTB: option = 0; break;
@@ -14752,8 +15161,10 @@ static inline void cj_strb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x38206800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -14874,8 +15285,10 @@ static inline void cj_strh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rm < 0) return;
     uint32_t instr = 0x78200800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
       uint32_t option = 0;
       switch (src.extend.kind) {
         case CJ_EXTEND_KIND_UXTB: option = 0; break;
@@ -14904,8 +15317,10 @@ static inline void cj_stset(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0xB820301F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -14918,8 +15333,10 @@ static inline void cj_stsetl(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0xB820301F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -14932,8 +15349,10 @@ static inline void cj_stsetb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x3820301F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -14946,8 +15365,10 @@ static inline void cj_stsetlb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x3860301F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -14960,8 +15381,10 @@ static inline void cj_stseth(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x7820301F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -14974,8 +15397,10 @@ static inline void cj_stsetlh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x7860301F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -14988,8 +15413,10 @@ static inline void cj_stsmax(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0xB820401F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15002,8 +15429,10 @@ static inline void cj_stsmaxl(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0xB820401F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15016,8 +15445,10 @@ static inline void cj_stsmaxb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x3820401F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15030,8 +15461,10 @@ static inline void cj_stsmaxlb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x3860401F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15044,8 +15477,10 @@ static inline void cj_stsmaxh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x7820401F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15058,8 +15493,10 @@ static inline void cj_stsmaxlh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x7860401F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15072,8 +15509,10 @@ static inline void cj_stsmin(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0xB820501F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15086,8 +15525,10 @@ static inline void cj_stsminl(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0xB820501F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15100,8 +15541,10 @@ static inline void cj_stsminb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x3820501F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15114,8 +15557,10 @@ static inline void cj_stsminlb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x3860501F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15128,8 +15573,10 @@ static inline void cj_stsminh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x7820501F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15142,8 +15589,10 @@ static inline void cj_stsminlh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x7860501F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15156,7 +15605,8 @@ static inline void cj_sttr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0xB8000800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -15171,7 +15621,8 @@ static inline void cj_sttrb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x38000800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -15186,7 +15637,8 @@ static inline void cj_sttrh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x78000800;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -15201,8 +15653,10 @@ static inline void cj_stumax(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0xB820601F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15215,8 +15669,10 @@ static inline void cj_stumaxl(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0xB820601F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15229,8 +15685,10 @@ static inline void cj_stumaxb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x3820601F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15243,8 +15701,10 @@ static inline void cj_stumaxlb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x3860601F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15257,8 +15717,10 @@ static inline void cj_stumaxh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x7820601F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15271,8 +15733,10 @@ static inline void cj_stumaxlh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x7860601F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15285,8 +15749,10 @@ static inline void cj_stumin(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0xB820701F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15299,8 +15765,10 @@ static inline void cj_stuminl(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0xB820701F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15313,8 +15781,10 @@ static inline void cj_stuminb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x3820701F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15327,8 +15797,10 @@ static inline void cj_stuminlb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x3860701F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15341,8 +15813,10 @@ static inline void cj_stuminh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x7820701F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15355,8 +15829,10 @@ static inline void cj_stuminlh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rn < 0) return;
     uint32_t instr = 0x7860701F;
     instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rd & ((1u << 5) - 1u)) << 16);n    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rd & ((1u << 5) - 1u)) << 16);
+    instr &= ~(((1u << 5) - 1u) << 5);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -15369,7 +15845,8 @@ static inline void cj_stur(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0xB8000000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -15384,7 +15861,8 @@ static inline void cj_sturb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x38000000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -15399,7 +15877,8 @@ static inline void cj_sturh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = src.constant;
     uint32_t instr = 0x78000000;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~((1u << 5) - 1u);
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
     cj_add_u32(ctx, instr);
     return;
@@ -15562,8 +16041,10 @@ static inline void cj_sub(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    uint32_t shift_mode = 0;
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    uint32_t shift_mode = 0;
     switch (src.shift.kind) {
       case CJ_SHIFT_KIND_NONE:
       case CJ_SHIFT_KIND_LSL:
@@ -15605,7 +16086,8 @@ static inline void cj_sub(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr |= ((imm & 0xfff) << 10);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr |= ((imm & 0xfff) << 10);
     uint32_t sh = 0;
     if (src.shift.kind != CJ_SHIFT_KIND_NONE || src.shift.has_amount) {
       if (src.shift.kind != CJ_SHIFT_KIND_LSL) return;
@@ -15632,8 +16114,10 @@ static inline void cj_sub(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
       uint32_t option = 0;
       switch (src.extend.kind) {
         case CJ_EXTEND_KIND_UXTB: option = 0; break;
@@ -15728,8 +16212,10 @@ static inline void cj_subs(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    uint32_t shift_mode = 0;
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    uint32_t shift_mode = 0;
     switch (src.shift.kind) {
       case CJ_SHIFT_KIND_NONE:
       case CJ_SHIFT_KIND_LSL:
@@ -15771,7 +16257,8 @@ static inline void cj_subs(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr |= ((imm & 0xfff) << 10);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr |= ((imm & 0xfff) << 10);
     uint32_t sh = 0;
     if (src.shift.kind != CJ_SHIFT_KIND_NONE || src.shift.has_amount) {
       if (src.shift.kind != CJ_SHIFT_KIND_LSL) return;
@@ -15798,8 +16285,10 @@ static inline void cj_subs(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    if (src.extend.kind != CJ_EXTEND_KIND_NONE) {
       uint32_t option = 0;
       switch (src.extend.kind) {
         case CJ_EXTEND_KIND_UXTB: option = 0; break;
@@ -16136,7 +16625,8 @@ static inline void cj_sxtb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -16153,7 +16643,8 @@ static inline void cj_sxth(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -16168,7 +16659,8 @@ static inline void cj_sxtw(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -16249,8 +16741,10 @@ static inline void cj_tst(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint32_t instr = 0x6A00001F;
     instr = arm64_is_64bit(dst.reg) ? 0xEA00001F : 0x6A00001F;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);n    uint32_t shift_mode = 0;
+    instr |= ((rd & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rn & ((1u << 5) - 1u)) << 16);
+    uint32_t shift_mode = 0;
     switch (src.shift.kind) {
       case CJ_SHIFT_KIND_NONE:
       case CJ_SHIFT_KIND_LSL:
@@ -16289,7 +16783,8 @@ static inline void cj_tst(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t imm = raw_imm;
     uint32_t instr = 0x7200001F;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
@@ -16301,7 +16796,8 @@ static inline void cj_tst(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint32_t instr = 0xF200001F;
     if (arm64_is_64bit(dst.reg)) instr = 0xF200001F;
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -16409,7 +16905,8 @@ static inline void cj_ubfm(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -16445,7 +16942,8 @@ static inline void cj_ucvtf(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount && (dst.reg[0] == 's' || dst.reg[0] == 'd' || dst.reg[0] == 'h') && (src.reg[0] == 'x' || src.reg[0] == 'w')) {
@@ -16463,7 +16961,8 @@ static inline void cj_ucvtf(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -16485,8 +16984,10 @@ static inline void cj_udiv(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -16592,8 +17093,10 @@ static inline void cj_umaddl(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -16724,8 +17227,10 @@ static inline void cj_umnegl(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -16744,8 +17249,10 @@ static inline void cj_umsubl(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -16761,8 +17268,10 @@ static inline void cj_umulh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -16778,8 +17287,10 @@ static inline void cj_umull(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rm & ((1u << 5) - 1u)) << 16);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    instr &= ~(((1u << 5) - 1u) << 16);
+    instr |= ((rm & ((1u << 5) - 1u)) << 16);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -17155,7 +17666,8 @@ static inline void cj_uxtb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
@@ -17170,7 +17682,8 @@ static inline void cj_uxth(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);n    cj_add_u32(ctx, instr);
+    instr |= ((rn & ((1u << 5) - 1u)) << 5);
+    cj_add_u32(ctx, instr);
     return;
   }
 }
