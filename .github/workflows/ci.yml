@@ -75,6 +75,11 @@ jobs:
           ${{ matrix.cc }} -std=c11 -O2 -Isrc ${{ matrix.harness }} src/ctx.c -o jit_tests
           ./jit_tests
 
+      - name: Build and run builder test harness
+        run: |
+          ${{ matrix.cc }} -std=c11 -O2 -Isrc tests/test_harness_builder.c src/builder.c src/ctx.c -o jit_tests_builder
+          ./jit_tests_builder
+
       - name: Build and run SIMD example
         run: |
           ${{ matrix.cc }} -std=c11 -O2 -Isrc examples/simd.c src/ctx.c -o simd_example

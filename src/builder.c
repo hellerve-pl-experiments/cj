@@ -10,6 +10,7 @@
 #endif
 
 #include <string.h>
+#include <stdint.h>
 #include <assert.h>
 
 static size_t align_stack_size(size_t size) {
@@ -42,9 +43,6 @@ void cj_builder_fn_prologue(cj_ctx* ctx, size_t requested_stack_bytes, cj_builde
     cj_operand amount = cj_make_constant((uint64_t)aligned);
     cj_sub(ctx, sp, amount);
   }
-#else
-  (void)aligned;
-  if (frame) frame->stack_size = 0;
 #endif
 }
 
@@ -69,8 +67,6 @@ void cj_builder_fn_epilogue(cj_ctx* ctx, const cj_builder_frame* frame) {
     cj_operand amount = cj_make_constant((uint64_t)aligned);
     cj_add(ctx, sp, amount);
   }
-#else
-  (void)aligned;
 #endif
 }
 
@@ -141,10 +137,6 @@ static void branch_on_condition(cj_ctx* ctx, cj_condition cond, cj_label target)
     case CJ_COND_G: cj_bgt(ctx, target); break;
     default: assert(0 && "unsupported condition on arm64");
   }
-#else
-  (void)ctx;
-  (void)cond;
-  (void)target;
 #endif
 }
 
@@ -153,9 +145,6 @@ static void branch_unconditional(cj_ctx* ctx, cj_label target) {
   cj_jmp(ctx, target);
 #elif defined(__aarch64__) || defined(_M_ARM64)
   cj_b(ctx, target);
-#else
-  (void)ctx;
-  (void)target;
 #endif
 }
 
@@ -251,6 +240,28 @@ void cj_builder_for_end(cj_ctx* ctx, cj_builder_for_loop* loop) {
 }
 
 cj_operand cj_builder_assign(cj_ctx* ctx, cj_operand dst, cj_operand src) {
+#if defined(__aarch64__) || defined(_M_ARM64)
+  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
+    const char* reg = dst.reg;
+    int is64 = (reg && reg[0] == 'x');
+    uint64_t mask = is64 ? UINT64_MAX : 0xFFFFFFFFu;
+    uint64_t value = src.constant & mask;
+    if (value == 0) {
+      cj_mov(ctx, dst, cj_builder_zero_operand());
+      return dst;
+    }
+    cj_operand chunk = cj_make_constant((value & 0xFFFFu));
+    cj_movz(ctx, dst, chunk);
+    for (int shift = 16; shift < (is64 ? 64 : 32); shift += 16) {
+      uint16_t part = (uint16_t)((value >> shift) & 0xFFFFu);
+      if (!part) continue;
+      uint64_t encoded = (uint64_t)part | ((uint64_t)(shift / 16) << 16);
+      cj_operand next = cj_make_constant(encoded);
+      cj_movk(ctx, dst, next);
+    }
+    return dst;
+  }
+#endif
   if (dst.type == CJ_REGISTER) {
     cj_mov(ctx, dst, src);
     return dst;
@@ -277,8 +288,6 @@ static cj_operand get_return_operand(void) {
   return cj_make_register("eax");
 #elif defined(__aarch64__) || defined(_M_ARM64)
   return cj_make_register("w0");
-#else
-#error "Unsupported architecture for cj_builder_return_reg"
 #endif
 }
 
@@ -300,9 +309,6 @@ cj_operand cj_builder_arg_int(cj_ctx* ctx, unsigned index) {
   assert(index < count);
   (void)count;
   return cj_make_register(regs[index]);
-#else
-  (void)index;
-#error "Unsupported architecture for cj_builder_arg_int"
 #endif
 }
 
@@ -326,8 +332,6 @@ cj_operand cj_builder_zero_operand(void) {
   return cj_make_constant(0);
 #elif defined(__aarch64__) || defined(_M_ARM64)
   return cj_make_register("wzr");
-#else
-#error "Unsupported architecture for cj_builder_zero_operand"
 #endif
 }
 
@@ -344,19 +348,16 @@ void cj_builder_clear(cj_ctx* ctx, cj_operand dst) {
 
 cj_operand cj_builder_scratch_reg(unsigned index) {
 #if defined(__x86_64__) || defined(_M_X64)
-  static const char* regs[] = {"ecx", "edx", "r8d", "r9d", "r10d", "r11d"};
+  static const char* regs[] = {"r8d", "r9d", "r10d", "r11d", "ecx", "edx"};
   const size_t count = sizeof(regs) / sizeof(regs[0]);
   assert(index < count);
   (void)count;
   return cj_make_register(regs[index]);
 #elif defined(__aarch64__) || defined(_M_ARM64)
-  static const char* regs[] = {"w1", "w2", "w3", "w4", "w5", "w6"};
+  static const char* regs[] = {"w2", "w3", "w4", "w5", "w6", "w7"};
   const size_t count = sizeof(regs) / sizeof(regs[0]);
   assert(index < count);
   (void)count;
   return cj_make_register(regs[index]);
-#else
-  (void)index;
-#error "Unsupported architecture for cj_builder_scratch_reg"
 #endif
 }

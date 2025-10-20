@@ -97,6 +97,8 @@ cj_builder_for_end(cj, &loop);
 cj_builder_return_value(cj, &frame, sum);
 ```
 
+see also `docs/builder.md`.
+
 ### requirements
 
 - c11 compiler (gcc, clang)
