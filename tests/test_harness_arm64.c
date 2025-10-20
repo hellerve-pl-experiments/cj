@@ -1,3 +1,7 @@
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #if !defined(__aarch64__) && !defined(_M_ARM64)
 #error "This harness must be built on an ARM64 target."
 #endif
@@ -7,6 +11,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
+#include <setjmp.h>
 
 #include "ctx.h"
 #include "op.h"
@@ -1000,9 +1006,6 @@ static void test_sve_encoding(void) {
 
   destroy_cj_ctx(cj);
 }
-
-#include <signal.h>
-#include <setjmp.h>
 
 static jmp_buf sve_test_env;
 static int sve_available = -1;  // -1 = unknown, 0 = not available, 1 = available
