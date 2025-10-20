@@ -218,7 +218,7 @@ static void test_memory_addressing(void) {
 
   cj_operand rax = {.type = CJ_REGISTER, .reg = "rax"};
   cj_operand rdi = {.type = CJ_REGISTER, .reg = "rdi"};
-  cj_operand mem = {.type = CJ_MEMORY, .mem = {.base = "rdi", .index = NULL, .scale = 1, .disp = 8}};
+  cj_operand mem = {.type = CJ_MEMORY, .mem = {.base = "rdi", .index = NULL, .scale = 1, .disp = 4}};
 
   cj_mov(cj, rax, mem);
   cj_ret(cj);
