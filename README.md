@@ -76,25 +76,36 @@ you can find some more examples in the `examples` directory.
 For reusable building blocks, the optional `builder` helpers provide prologue/epilogue setup and structured loops:
 
 ```c
+#include <stdio.h>
 #include "builder.h"
 
-cj_ctx* cj = create_cj_ctx();
-cj_builder_frame frame;
-cj_builder_fn_prologue(cj, 0, &frame);
+typedef int (*sum_fn)(int);
 
-cj_operand n = cj_builder_arg_int(cj, 0);
-cj_operand sum = cj_builder_scratch_reg(0);
-cj_operand i = cj_builder_scratch_reg(1);
-cj_operand one = cj_make_constant(1);
+int main(void) {
+  cj_ctx* cj = create_cj_ctx();
+  cj_builder_frame frame;
+  cj_builder_fn_prologue(cj, 0, &frame);
 
-cj_builder_clear(cj, sum);
-cj_builder_clear(cj, i);
+  cj_operand n = cj_builder_arg_int(cj, 0);
+  cj_operand sum = cj_builder_scratch_reg(0);
+  cj_operand i = cj_builder_scratch_reg(1);
+  cj_operand one = cj_make_constant(1);
 
-cj_builder_for_loop loop = cj_builder_for_begin(cj, i, one, n, one, CJ_COND_GE);
-cj_builder_add_assign(cj, sum, i);
-cj_builder_for_end(cj, &loop);
+  cj_builder_assign(cj, sum, cj_builder_zero_operand());
 
-cj_builder_return_value(cj, &frame, sum);
+  cj_builder_for_loop loop = cj_builder_for_begin(cj, i, one, n, one, CJ_COND_GE);
+  cj_builder_add_assign(cj, sum, i);
+  cj_builder_for_end(cj, &loop);
+
+  cj_builder_return_value(cj, &frame, sum);
+
+  sum_fn fn = (sum_fn)create_cj_fn(cj);
+  printf("triangular(5) = %d\n", fn ? fn(5) : -1);
+
+  destroy_cj_fn(cj, (cj_fn)fn);
+  destroy_cj_ctx(cj);
+  return 0;
+}
 ```
 
 see also `docs/builder.md`.
