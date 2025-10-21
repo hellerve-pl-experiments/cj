@@ -280,11 +280,15 @@ typedef enum
 } cj_condition;
 
 #define CJ_REG(NAME)                                                                               \
-  static const cj_operand cj_##NAME = (cj_operand)                                                 \
-  {                                                                                                \
-    .type = CJ_REGISTER, .mask = NULL, .zero_mask = 0, .sae = 0, .rounding = CJ_ROUND_DEFAULT,     \
-    .reg = #NAME, .shift = {.kind = CJ_SHIFT_KIND_NONE, .amount = 0, .has_amount = 0},             \
-    .extend = {.kind = CJ_EXTEND_KIND_NONE, .amount = 0, .has_amount = 0}                          \
+  static const cj_operand cj_##NAME = {                                                            \
+      .type = CJ_REGISTER,                                                                         \
+      .mask = NULL,                                                                                \
+      .zero_mask = 0,                                                                              \
+      .sae = 0,                                                                                    \
+      .rounding = CJ_ROUND_DEFAULT,                                                                \
+      .reg = #NAME,                                                                                \
+      .shift = {.kind = CJ_SHIFT_KIND_NONE, .amount = 0, .has_amount = 0},                         \
+      .extend = {.kind = CJ_EXTEND_KIND_NONE, .amount = 0, .has_amount = 0},                       \
   }
 
 #if defined(__x86_64__) || defined(_M_X64)
