@@ -1,17 +1,19 @@
-# examples
+#examples
 
 Small programs that showcase `cj`:
 
-- `simple.c` – minimal program (nop & ret).
-- `add.c` – adds a constant to the first argument and returns it; demonstrates register operands and constants.
-- `fibonacci.c` – full control-flow example (labels, branches, loops) emitted with the low-level API.
+    - `simple.c` – minimal
+    program(nop &ret)
+        .- `add.c` – adds a constant to the first argument and returns it;
+demonstrates register operands and constants.- `fibonacci.c` – full control -
+    flow example(labels, branches, loops) emitted with the low-level API.
 - `hl_fibonacci.c` – fibonacci again, but built entirely with the builder helpers.
 - `simd.c` – x86 and arm simd vector addition loops, exercising memory operands and floating-point registers.
 
 ## building
 
 ```bash
-# generic build (adjust CC for clang/gcc as needed)
+#generic build(adjust CC for clang / gcc as needed)
 cc -std=c11 -O2 -Isrc examples/simple.c src/ctx.c -o simple_example
 ./simple_example
 

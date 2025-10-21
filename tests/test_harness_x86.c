@@ -14,8 +14,9 @@
 #include "op.h"
 #include "register.h"
 
-static void test_add_constant(void) {
-  cj_ctx* cj = create_cj_ctx();
+static void test_add_constant(void)
+{
+  cj_ctx *cj = create_cj_ctx();
 
   cj_operand rax = {.type = CJ_REGISTER, .reg = "rax"};
   cj_operand rdi = {.type = CJ_REGISTER, .reg = "rdi"};
@@ -34,8 +35,9 @@ static void test_add_constant(void) {
   assert(res == 42);
 }
 
-static void test_branch_loop(void) {
-  cj_ctx* cj = create_cj_ctx();
+static void test_branch_loop(void)
+{
+  cj_ctx *cj = create_cj_ctx();
 
   cj_operand rax = {.type = CJ_REGISTER, .reg = "rax"};
   cj_operand rdi = {.type = CJ_REGISTER, .reg = "rdi"};
@@ -68,8 +70,9 @@ static void test_branch_loop(void) {
   assert(res == 15);
 }
 
-static void test_simd_add(void) {
-  cj_ctx* cj = create_cj_ctx();
+static void test_simd_add(void)
+{
+  cj_ctx *cj = create_cj_ctx();
 
   cj_operand rdi = {.type = CJ_REGISTER, .reg = "rdi"};
   cj_operand rsi = {.type = CJ_REGISTER, .reg = "rsi"};
@@ -80,9 +83,12 @@ static void test_simd_add(void) {
   cj_operand sixteen = {.type = CJ_CONSTANT, .constant = 16};
   cj_operand four = {.type = CJ_CONSTANT, .constant = 4};
 
-  cj_operand dst = {.type = CJ_MEMORY, .mem = {.base = "rdi", .index = NULL, .scale = 1, .disp = 0}};
-  cj_operand src_a = {.type = CJ_MEMORY, .mem = {.base = "rsi", .index = NULL, .scale = 1, .disp = 0}};
-  cj_operand src_b = {.type = CJ_MEMORY, .mem = {.base = "rdx", .index = NULL, .scale = 1, .disp = 0}};
+  cj_operand dst = {.type = CJ_MEMORY,
+                    .mem = {.base = "rdi", .index = NULL, .scale = 1, .disp = 0}};
+  cj_operand src_a = {.type = CJ_MEMORY,
+                      .mem = {.base = "rsi", .index = NULL, .scale = 1, .disp = 0}};
+  cj_operand src_b = {.type = CJ_MEMORY,
+                      .mem = {.base = "rdx", .index = NULL, .scale = 1, .disp = 0}};
 
   cj_label loop = cj_create_label(cj);
   cj_label done = cj_create_label(cj);
@@ -107,7 +113,7 @@ static void test_simd_add(void) {
   cj_mark_label(cj, done);
   cj_ret(cj);
 
-  typedef void (*fn_t)(float*, const float*, const float*, int);
+  typedef void (*fn_t)(float *, const float *, const float *, int);
   fn_t fn = (fn_t)create_cj_fn(cj);
 
   float out[8] = {0};
@@ -119,13 +125,15 @@ static void test_simd_add(void) {
   destroy_cj_fn(cj, (cj_fn)fn);
   destroy_cj_ctx(cj);
 
-  for (int i = 0; i < 8; ++i) {
+  for (int i = 0; i < 8; ++i)
+  {
     assert(out[i] == 9.f);
   }
 }
 
-static void test_string_movsb(void) {
-  cj_ctx* cj = create_cj_ctx();
+static void test_string_movsb(void)
+{
+  cj_ctx *cj = create_cj_ctx();
 
   cj_operand rdi = {.type = CJ_REGISTER, .reg = "rdi"};
   cj_operand rsi = {.type = CJ_REGISTER, .reg = "rsi"};
@@ -138,7 +146,7 @@ static void test_string_movsb(void) {
   cj_movsb(cj);
   cj_ret(cj);
 
-  typedef void (*fn_t)(char*, const char*, size_t);
+  typedef void (*fn_t)(char *, const char *, size_t);
   fn_t fn = (fn_t)create_cj_fn(cj);
 
   const char src[] = "JIT string test";
@@ -151,8 +159,9 @@ static void test_string_movsb(void) {
   assert(memcmp(dst, src, sizeof(src)) == 0);
 }
 
-static void test_negative_immediate(void) {
-  cj_ctx* cj = create_cj_ctx();
+static void test_negative_immediate(void)
+{
+  cj_ctx *cj = create_cj_ctx();
 
   cj_operand rax = {.type = CJ_REGISTER, .reg = "rax"};
   cj_operand rdi = {.type = CJ_REGISTER, .reg = "rdi"};
@@ -171,8 +180,9 @@ static void test_negative_immediate(void) {
   assert(res == 41);
 }
 
-static void test_negative_immediate_sub(void) {
-  cj_ctx* cj = create_cj_ctx();
+static void test_negative_immediate_sub(void)
+{
+  cj_ctx *cj = create_cj_ctx();
 
   cj_operand rax = {.type = CJ_REGISTER, .reg = "rax"};
   cj_operand rdi = {.type = CJ_REGISTER, .reg = "rdi"};
@@ -191,8 +201,9 @@ static void test_negative_immediate_sub(void) {
   assert(res == 15);
 }
 
-static void test_immediate_boundaries(void) {
-  cj_ctx* cj = create_cj_ctx();
+static void test_immediate_boundaries(void)
+{
+  cj_ctx *cj = create_cj_ctx();
 
   cj_operand rax = {.type = CJ_REGISTER, .reg = "rax"};
   cj_operand rdi = {.type = CJ_REGISTER, .reg = "rdi"};
@@ -213,17 +224,19 @@ static void test_immediate_boundaries(void) {
   assert(res == 99);
 }
 
-static void test_memory_addressing(void) {
-  cj_ctx* cj = create_cj_ctx();
+static void test_memory_addressing(void)
+{
+  cj_ctx *cj = create_cj_ctx();
 
   cj_operand rax = {.type = CJ_REGISTER, .reg = "rax"};
   cj_operand rdi = {.type = CJ_REGISTER, .reg = "rdi"};
-  cj_operand mem = {.type = CJ_MEMORY, .mem = {.base = "rdi", .index = NULL, .scale = 1, .disp = 4}};
+  cj_operand mem = {.type = CJ_MEMORY,
+                    .mem = {.base = "rdi", .index = NULL, .scale = 1, .disp = 4}};
 
   cj_mov(cj, rax, mem);
   cj_ret(cj);
 
-  typedef int (*fn_t)(int*);
+  typedef int (*fn_t)(int *);
   fn_t fn = (fn_t)create_cj_fn(cj);
 
   int values[3] = {10, 20, 30};
@@ -235,8 +248,9 @@ static void test_memory_addressing(void) {
   assert(res == 20);
 }
 
-static void test_extended_registers(void) {
-  cj_ctx* cj = create_cj_ctx();
+static void test_extended_registers(void)
+{
+  cj_ctx *cj = create_cj_ctx();
 
   cj_operand rax = {.type = CJ_REGISTER, .reg = "rax"};
   cj_operand rdi = {.type = CJ_REGISTER, .reg = "rdi"};
@@ -257,7 +271,8 @@ static void test_extended_registers(void) {
   assert(res == 300);
 }
 
-int main(void) {
+int main(void)
+{
   test_add_constant();
   test_branch_loop();
   test_simd_add();

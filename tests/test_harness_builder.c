@@ -6,8 +6,9 @@
 typedef int (*fn1_t)(int);
 typedef int (*fn2_t)(int, int);
 
-static void test_assign_and_add(void) {
-  cj_ctx* cj = create_cj_ctx();
+static void test_assign_and_add(void)
+{
+  cj_ctx *cj = create_cj_ctx();
   cj_builder_frame frame;
   cj_builder_fn_prologue(cj, 0, &frame);
 
@@ -28,8 +29,9 @@ static void test_assign_and_add(void) {
   destroy_cj_ctx(cj);
 }
 
-static void test_for_loop_sum(void) {
-  cj_ctx* cj = create_cj_ctx();
+static void test_for_loop_sum(void)
+{
+  cj_ctx *cj = create_cj_ctx();
   cj_builder_frame frame;
   cj_builder_fn_prologue(cj, 0, &frame);
 
@@ -40,7 +42,8 @@ static void test_for_loop_sum(void) {
   cj_builder_assign(cj, sum, cj_builder_zero_operand());
 
   cj_operand i = cj_builder_scratch_reg(1);
-  cj_builder_for_loop loop = cj_builder_for_begin(cj, i, start, end, cj_make_constant(1), CJ_COND_G);
+  cj_builder_for_loop loop =
+      cj_builder_for_begin(cj, i, start, end, cj_make_constant(1), CJ_COND_G);
   cj_builder_add_assign(cj, sum, i);
   cj_builder_for_end(cj, &loop);
 
@@ -51,14 +54,15 @@ static void test_for_loop_sum(void) {
 
   assert(fn(1, 5) == 1 + 2 + 3 + 4 + 5);
   assert(fn(3, 3) == 3);
-  assert(fn(2, 1) == 0);  // loop should not run when start > end
+  assert(fn(2, 1) == 0); // loop should not run when start > end
 
   destroy_cj_fn(cj, (cj_fn)fn);
   destroy_cj_ctx(cj);
 }
 
-static void test_if_else(void) {
-  cj_ctx* cj = create_cj_ctx();
+static void test_if_else(void)
+{
+  cj_ctx *cj = create_cj_ctx();
   cj_builder_frame frame;
   cj_builder_fn_prologue(cj, 0, &frame);
 
@@ -88,7 +92,8 @@ static void test_if_else(void) {
   destroy_cj_ctx(cj);
 }
 
-int main(void) {
+int main(void)
+{
   test_assign_and_add();
   test_for_loop_sum();
   test_if_else();

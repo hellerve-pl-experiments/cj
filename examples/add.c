@@ -1,12 +1,12 @@
-#include <stdio.h>
 #include "ctx.h"
 #include "op.h"
+#include <stdio.h>
 
 typedef int (*add_fn)(int);
 
-int main(void) {
-  cj_ctx* cj = create_cj_ctx();
-
+int main(void)
+{
+  cj_ctx *cj = create_cj_ctx();
 
 #ifdef __aarch64__
   cj_operand reg = {.type = CJ_REGISTER, .reg = "x0"};

@@ -6,6 +6,27 @@ on:
       - "**"
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install formatting tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format clang-tidy
+
+      - name: Run clang-format
+        run: |
+          files=$(git ls-files '*.c' '*.h' | grep -v '^src/arch/')
+          if [ -n "$files" ]; then
+            clang-format --style=file --dry-run --Werror $files
+          fi
+
+      - name: Run clang-tidy
+        run: |
+          clang-tidy src/ctx.c --warnings-as-errors=* -- -std=c11 -Isrc
+
   build:
     runs-on: ${{ matrix.os }}
     strategy:
