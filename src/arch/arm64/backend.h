@@ -382,6 +382,7 @@ static inline void cj_add(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 12) - 1u);
     if (imm > 4095) return;
     uint32_t instr = 0x11000000;
     int sf = arm64_is_64bit(dst.reg) ? 1 : 0;
@@ -549,6 +550,7 @@ static inline void cj_adds(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 12) - 1u);
     if (imm > 4095) return;
     uint32_t instr = 0x31000000;
     int sf = arm64_is_64bit(dst.reg) ? 1 : 0;
@@ -779,22 +781,8 @@ static inline void cj_and(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
     int rn = rd;
-    uint64_t imm = src.constant;
+
     uint32_t instr = 0x12000000;
-    instr &= ~((1u << 5) - 1u);
-    instr |= (rd & ((1u << 5) - 1u));
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x92000000;
-    instr |= (1 << 31);
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
@@ -855,22 +843,8 @@ static inline void cj_ands(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
     int rn = rd;
-    uint64_t imm = src.constant;
+
     uint32_t instr = 0x72000000;
-    instr &= ~((1u << 5) - 1u);
-    instr |= (rd & ((1u << 5) - 1u));
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0xF2000000;
-    instr |= (1 << 31);
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
@@ -906,7 +880,7 @@ static inline void cj_asr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
     int rn = rd;
-    uint64_t imm = src.constant;
+
     uint32_t instr = 0x13007C00;
     int sf = arm64_is_64bit(dst.reg) ? 1 : 0;
     instr |= (sf << 31);
@@ -1690,7 +1664,7 @@ static inline void cj_cas(cj_ctx* ctx, cj_operand compare, cj_operand value, cj_
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(value.reg);
+
     
     uint32_t instr = 0x88A07C00;
     
@@ -1712,7 +1686,7 @@ static inline void cj_casa(cj_ctx* ctx, cj_operand compare, cj_operand value, cj
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(value.reg);
+
     
     uint32_t instr = 0x88A07C00;
     
@@ -1734,7 +1708,7 @@ static inline void cj_casal(cj_ctx* ctx, cj_operand compare, cj_operand value, c
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(value.reg);
+
     
     uint32_t instr = 0x88A07C00;
     
@@ -1756,7 +1730,7 @@ static inline void cj_casl(cj_ctx* ctx, cj_operand compare, cj_operand value, cj
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(value.reg);
+
     
     uint32_t instr = 0x88A07C00;
     
@@ -1778,7 +1752,7 @@ static inline void cj_casab(cj_ctx* ctx, cj_operand compare, cj_operand value, c
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(value.reg);
+
     
     uint32_t instr = 0x08A07C00;
     
@@ -1800,7 +1774,7 @@ static inline void cj_casalb(cj_ctx* ctx, cj_operand compare, cj_operand value, 
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(value.reg);
+
     
     uint32_t instr = 0x08A07C00;
     
@@ -1822,7 +1796,7 @@ static inline void cj_casb(cj_ctx* ctx, cj_operand compare, cj_operand value, cj
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(value.reg);
+
     
     uint32_t instr = 0x08A07C00;
     
@@ -1844,7 +1818,7 @@ static inline void cj_caslb(cj_ctx* ctx, cj_operand compare, cj_operand value, c
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(value.reg);
+
     
     uint32_t instr = 0x08A07C00;
     
@@ -1866,7 +1840,7 @@ static inline void cj_casah(cj_ctx* ctx, cj_operand compare, cj_operand value, c
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(value.reg);
+
     
     uint32_t instr = 0x48A07C00;
     
@@ -1888,7 +1862,7 @@ static inline void cj_casalh(cj_ctx* ctx, cj_operand compare, cj_operand value, 
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(value.reg);
+
     
     uint32_t instr = 0x48A07C00;
     
@@ -1910,7 +1884,7 @@ static inline void cj_cash(cj_ctx* ctx, cj_operand compare, cj_operand value, cj
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(value.reg);
+
     
     uint32_t instr = 0x48A07C00;
     
@@ -1932,7 +1906,7 @@ static inline void cj_caslh(cj_ctx* ctx, cj_operand compare, cj_operand value, c
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(value.reg);
+
     
     uint32_t instr = 0x48A07C00;
     
@@ -3152,22 +3126,8 @@ static inline void cj_eor(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
     int rn = rd;
-    uint64_t imm = src.constant;
+
     uint32_t instr = 0x52000000;
-    instr &= ~((1u << 5) - 1u);
-    instr |= (rd & ((1u << 5) - 1u));
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0xD2000000;
-    instr |= (1 << 31);
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
@@ -4977,7 +4937,7 @@ static inline void cj_fmov(cj_ctx* ctx, cj_operand dst, cj_operand src) {
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
     int rd = arm64_parse_fp_reg(dst.reg);
     if (rd < 0) return;
-    int rn = 0;
+
     uint64_t raw_imm = src.constant;
     uint64_t imm = raw_imm;
     imm &= ((1u << 8) - 1u);
@@ -6019,7 +5979,7 @@ static inline void cj_gmi(cj_ctx* ctx, cj_operand dst, cj_operand src) {
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
-    int rn = rd;
+
     int rm = arm64_parse_reg(src.reg);
     if (rm < 0) return;
     uint32_t instr = 0x9AC01400;
@@ -6071,7 +6031,7 @@ static inline void cj_irg(cj_ctx* ctx, cj_operand dst, cj_operand src) {
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
-    int rn = rd;
+
     int rm = arm64_parse_reg(src.reg);
     if (rm < 0) return;
     uint32_t instr = 0x9AC01000;
@@ -6196,11 +6156,12 @@ static inline void cj_ld1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     cj_add_u32(ctx, instr);
     return;
   }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
+  if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
     int rn = rd;
-    uint64_t imm = src.constant;
+    int rm = arm64_parse_reg(src.reg);
+    if (rm < 0) return;
     uint32_t instr = 0x0CC02000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -6223,65 +6184,12 @@ static inline void cj_ld1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     cj_add_u32(ctx, instr);
     return;
   }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0CC02000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);
-    cj_add_u32(ctx, instr);
-    return;
-  }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
     int rn = rd;
     int rm = arm64_parse_reg(src.reg);
     if (rm < 0) return;
-    uint32_t instr = 0x0CC02000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0CC02000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    int rm = arm64_parse_reg(src.reg);
-    if (rm < 0) return;
-    uint32_t instr = 0x0CC02000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
     uint32_t instr = 0x0CC02000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -6326,17 +6234,6 @@ static inline void cj_ld1r(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
     instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0DDFC000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
     cj_add_u32(ctx, instr);
     return;
   }
@@ -6445,17 +6342,6 @@ static inline void cj_ld2(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     cj_add_u32(ctx, instr);
     return;
   }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0CDF8000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    cj_add_u32(ctx, instr);
-    return;
-  }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
@@ -6513,17 +6399,6 @@ static inline void cj_ld2r(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     cj_add_u32(ctx, instr);
     return;
   }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0DFFC000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    cj_add_u32(ctx, instr);
-    return;
-  }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
@@ -6572,17 +6447,6 @@ static inline void cj_ld3(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
     instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0CDF4000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
     cj_add_u32(ctx, instr);
     return;
   }
@@ -6643,17 +6507,6 @@ static inline void cj_ld3r(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     cj_add_u32(ctx, instr);
     return;
   }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0DDFE000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    cj_add_u32(ctx, instr);
-    return;
-  }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
@@ -6702,17 +6555,6 @@ static inline void cj_ld4(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
     instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0CDF0000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
     cj_add_u32(ctx, instr);
     return;
   }
@@ -6770,17 +6612,6 @@ static inline void cj_ld4r(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
     instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0DFFE000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
     cj_add_u32(ctx, instr);
     return;
   }
@@ -6900,7 +6731,7 @@ static inline void cj_ldaddab(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38200000;
     
@@ -6922,7 +6753,7 @@ static inline void cj_ldaddalb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38200000;
     
@@ -6944,7 +6775,7 @@ static inline void cj_ldaddb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_opera
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38200000;
     
@@ -6966,7 +6797,7 @@ static inline void cj_ldaddlb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38200000;
     
@@ -6988,7 +6819,7 @@ static inline void cj_ldaddah(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78200000;
     
@@ -7010,7 +6841,7 @@ static inline void cj_ldaddalh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78200000;
     
@@ -7032,7 +6863,7 @@ static inline void cj_ldaddh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_opera
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78200000;
     
@@ -7054,7 +6885,7 @@ static inline void cj_ldaddlh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78200000;
     
@@ -7074,7 +6905,7 @@ static inline void cj_ldapr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = arm64_parse_reg(src.reg);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(dst.reg);
+
     
     uint32_t instr = 0xB8A0C000;
     
@@ -7093,7 +6924,7 @@ static inline void cj_ldaprb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = arm64_parse_reg(src.reg);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(dst.reg);
+
     
     uint32_t instr = 0x38A0C000;
     
@@ -7112,7 +6943,7 @@ static inline void cj_ldaprh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = arm64_parse_reg(src.reg);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(dst.reg);
+
     
     uint32_t instr = 0x78A0C000;
     
@@ -7130,6 +6961,7 @@ static inline void cj_ldapur(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x99400000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -7146,6 +6978,7 @@ static inline void cj_ldapurb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x19400000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -7162,6 +6995,7 @@ static inline void cj_ldapurh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x59400000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -7178,6 +7012,7 @@ static inline void cj_ldapursb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x19C00000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -7194,6 +7029,7 @@ static inline void cj_ldapursh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x59C00000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -7210,6 +7046,7 @@ static inline void cj_ldapursw(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x99800000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -7246,7 +7083,7 @@ static inline void cj_ldarb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = arm64_parse_reg(src.reg);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(dst.reg);
+
     
     uint32_t instr = 0x08C08000;
     
@@ -7265,7 +7102,7 @@ static inline void cj_ldarh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = arm64_parse_reg(src.reg);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(dst.reg);
+
     
     uint32_t instr = 0x48C08000;
     
@@ -7286,7 +7123,7 @@ static inline void cj_ldaxp(cj_ctx* ctx, cj_operand status, cj_operand value, cj
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(value.reg);
+
     
     uint32_t instr = 0x88608000;
     
@@ -7325,7 +7162,7 @@ static inline void cj_ldaxrb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = arm64_parse_reg(src.reg);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(dst.reg);
+
     
     uint32_t instr = 0x08408000;
     
@@ -7344,7 +7181,7 @@ static inline void cj_ldaxrh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = arm64_parse_reg(src.reg);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(dst.reg);
+
     
     uint32_t instr = 0x48408000;
     
@@ -7453,7 +7290,7 @@ static inline void cj_ldclrab(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38201000;
     
@@ -7475,7 +7312,7 @@ static inline void cj_ldclralb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38201000;
     
@@ -7497,7 +7334,7 @@ static inline void cj_ldclrb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_opera
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38201000;
     
@@ -7519,7 +7356,7 @@ static inline void cj_ldclrlb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38201000;
     
@@ -7541,7 +7378,7 @@ static inline void cj_ldclrah(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78201000;
     
@@ -7563,7 +7400,7 @@ static inline void cj_ldclralh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78201000;
     
@@ -7585,7 +7422,7 @@ static inline void cj_ldclrh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_opera
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78201000;
     
@@ -7607,7 +7444,7 @@ static inline void cj_ldclrlh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78201000;
     
@@ -7717,7 +7554,7 @@ static inline void cj_ldeorab(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38202000;
     
@@ -7739,7 +7576,7 @@ static inline void cj_ldeoralb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38202000;
     
@@ -7761,7 +7598,7 @@ static inline void cj_ldeorb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_opera
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38202000;
     
@@ -7783,7 +7620,7 @@ static inline void cj_ldeorlb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38202000;
     
@@ -7805,7 +7642,7 @@ static inline void cj_ldeorah(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78202000;
     
@@ -7827,7 +7664,7 @@ static inline void cj_ldeoralh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78202000;
     
@@ -7849,7 +7686,7 @@ static inline void cj_ldeorh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_opera
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78202000;
     
@@ -7871,7 +7708,7 @@ static inline void cj_ldeorlh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78202000;
     
@@ -7909,8 +7746,9 @@ static inline void cj_ldg(cj_ctx* ctx, cj_operand dst, cj_operand src) {
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
-    int rn = rd;
+
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0xD9600000;
     cj_add_u32(ctx, instr);
     return;
@@ -7955,7 +7793,7 @@ static inline void cj_ldlarb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = arm64_parse_reg(src.reg);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(dst.reg);
+
     
     uint32_t instr = 0x08C00000;
     
@@ -7974,7 +7812,7 @@ static inline void cj_ldlarh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = arm64_parse_reg(src.reg);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(dst.reg);
+
     
     uint32_t instr = 0x48C00000;
     
@@ -9207,7 +9045,7 @@ static inline void cj_ldsetab(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38203000;
     
@@ -9229,7 +9067,7 @@ static inline void cj_ldsetalb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38203000;
     
@@ -9251,7 +9089,7 @@ static inline void cj_ldsetb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_opera
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38203000;
     
@@ -9273,7 +9111,7 @@ static inline void cj_ldsetlb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38203000;
     
@@ -9295,7 +9133,7 @@ static inline void cj_ldsetah(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78203000;
     
@@ -9317,7 +9155,7 @@ static inline void cj_ldsetalh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78203000;
     
@@ -9339,7 +9177,7 @@ static inline void cj_ldseth(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_opera
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78203000;
     
@@ -9361,7 +9199,7 @@ static inline void cj_ldsetlh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78203000;
     
@@ -9471,7 +9309,7 @@ static inline void cj_ldsmaxab(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38204000;
     
@@ -9493,7 +9331,7 @@ static inline void cj_ldsmaxalb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_op
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38204000;
     
@@ -9515,7 +9353,7 @@ static inline void cj_ldsmaxb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38204000;
     
@@ -9537,7 +9375,7 @@ static inline void cj_ldsmaxlb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38204000;
     
@@ -9559,7 +9397,7 @@ static inline void cj_ldsmaxah(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78204000;
     
@@ -9581,7 +9419,7 @@ static inline void cj_ldsmaxalh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_op
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78204000;
     
@@ -9603,7 +9441,7 @@ static inline void cj_ldsmaxh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78204000;
     
@@ -9625,7 +9463,7 @@ static inline void cj_ldsmaxlh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78204000;
     
@@ -9735,7 +9573,7 @@ static inline void cj_ldsminab(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38205000;
     
@@ -9757,7 +9595,7 @@ static inline void cj_ldsminalb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_op
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38205000;
     
@@ -9779,7 +9617,7 @@ static inline void cj_ldsminb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38205000;
     
@@ -9801,7 +9639,7 @@ static inline void cj_ldsminlb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38205000;
     
@@ -9823,7 +9661,7 @@ static inline void cj_ldsminah(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78205000;
     
@@ -9845,7 +9683,7 @@ static inline void cj_ldsminalh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_op
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78205000;
     
@@ -9867,7 +9705,7 @@ static inline void cj_ldsminh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78205000;
     
@@ -9889,7 +9727,7 @@ static inline void cj_ldsminlh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78205000;
     
@@ -9908,6 +9746,7 @@ static inline void cj_ldtr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0xB8400800;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -9924,6 +9763,7 @@ static inline void cj_ldtrb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x38400800;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -9940,6 +9780,7 @@ static inline void cj_ldtrh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x78400800;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -9956,6 +9797,7 @@ static inline void cj_ldtrsb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x38C00800;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -9972,6 +9814,7 @@ static inline void cj_ldtrsh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x78C00800;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -9988,6 +9831,7 @@ static inline void cj_ldtrsw(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0xB8800800;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -10095,7 +9939,7 @@ static inline void cj_ldumaxab(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38206000;
     
@@ -10117,7 +9961,7 @@ static inline void cj_ldumaxalb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_op
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38206000;
     
@@ -10139,7 +9983,7 @@ static inline void cj_ldumaxb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38206000;
     
@@ -10161,7 +10005,7 @@ static inline void cj_ldumaxlb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38206000;
     
@@ -10183,7 +10027,7 @@ static inline void cj_ldumaxah(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78206000;
     
@@ -10205,7 +10049,7 @@ static inline void cj_ldumaxalh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_op
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78206000;
     
@@ -10227,7 +10071,7 @@ static inline void cj_ldumaxh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78206000;
     
@@ -10249,7 +10093,7 @@ static inline void cj_ldumaxlh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78206000;
     
@@ -10359,7 +10203,7 @@ static inline void cj_lduminab(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38207000;
     
@@ -10381,7 +10225,7 @@ static inline void cj_lduminalb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_op
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38207000;
     
@@ -10403,7 +10247,7 @@ static inline void cj_lduminb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38207000;
     
@@ -10425,7 +10269,7 @@ static inline void cj_lduminlb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38207000;
     
@@ -10447,7 +10291,7 @@ static inline void cj_lduminah(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78207000;
     
@@ -10469,7 +10313,7 @@ static inline void cj_lduminalh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_op
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78207000;
     
@@ -10491,7 +10335,7 @@ static inline void cj_lduminh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_oper
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78207000;
     
@@ -10513,7 +10357,7 @@ static inline void cj_lduminlh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_ope
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78207000;
     
@@ -10532,6 +10376,7 @@ static inline void cj_ldur(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0xB8400000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -10548,6 +10393,7 @@ static inline void cj_ldurb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x38400000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -10564,6 +10410,7 @@ static inline void cj_ldurh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x78400000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -10580,6 +10427,7 @@ static inline void cj_ldursb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x38C00000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -10596,6 +10444,7 @@ static inline void cj_ldursh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x78C00000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -10612,6 +10461,7 @@ static inline void cj_ldursw(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0xB8800000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -10631,7 +10481,7 @@ static inline void cj_ldxp(cj_ctx* ctx, cj_operand status, cj_operand value, cj_
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(value.reg);
+
     
     uint32_t instr = 0x88600000;
     
@@ -10670,7 +10520,7 @@ static inline void cj_ldxrb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = arm64_parse_reg(src.reg);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(dst.reg);
+
     
     uint32_t instr = 0x08400000;
     
@@ -10689,7 +10539,7 @@ static inline void cj_ldxrh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = arm64_parse_reg(src.reg);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(dst.reg);
+
     
     uint32_t instr = 0x48400000;
     
@@ -10717,21 +10567,6 @@ static inline void cj_lsl(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr |= ((rn & ((1u << 5) - 1u)) << 5);
     instr &= ~(((1u << 5) - 1u) << 16);
     instr |= ((rm & ((1u << 5) - 1u)) << 16);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x53000000;
-    int sf = arm64_is_64bit(dst.reg) ? 1 : 0;
-    instr |= (sf << 31);
-    instr &= ~((1u << 5) - 1u);
-    instr |= (rd & ((1u << 5) - 1u));
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);
     cj_add_u32(ctx, instr);
     return;
   }
@@ -10806,7 +10641,7 @@ static inline void cj_lsr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
     int rn = rd;
-    uint64_t imm = src.constant;
+
     uint32_t instr = 0x53007C00;
     int sf = arm64_is_64bit(dst.reg) ? 1 : 0;
     instr |= (sf << 31);
@@ -11018,7 +10853,7 @@ static inline void cj_mov(cj_ctx* ctx, cj_operand dst, cj_operand src) {
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
-    int rn = 0;
+
     uint64_t raw_imm = src.constant;
     uint64_t imm = raw_imm;
     uint32_t instr = 0x320003E0;
@@ -11030,20 +10865,7 @@ static inline void cj_mov(cj_ctx* ctx, cj_operand dst, cj_operand src) {
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
-    int rn = 0;
-    uint64_t raw_imm = src.constant;
-    uint64_t imm = raw_imm;
-    uint32_t instr = 0xB20003E0;
-    if (arm64_is_64bit(dst.reg)) instr = 0xB20003E0;
-    instr &= ~((1u << 5) - 1u);
-    instr |= (rd & ((1u << 5) - 1u));
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = 0;
+
     uint64_t raw_imm = src.constant;
     uint64_t imm = raw_imm;
     uint32_t hw = (uint32_t)((raw_imm >> 0) & ((1u << 2) - 1u));
@@ -11059,28 +10881,13 @@ static inline void cj_mov(cj_ctx* ctx, cj_operand dst, cj_operand src) {
 }
 
 static inline void cj_movi(cj_ctx* ctx, cj_operand dst, cj_operand src) {
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_fp_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = 0;
-    uint64_t raw_imm = src.constant;
-    uint64_t imm = raw_imm;
-    uint32_t instr = 0x0F000400;
-    int ftype = (dst.reg[0] == 'd') ? 0x1 : (dst.reg[0] == 's') ? 0x0 : 0x3;
-    instr &= ~(0x3 << 22);
-    instr |= (ftype << 22);
-    instr &= ~((1u << 5) - 1u);
-    instr |= (rd & ((1u << 5) - 1u));
-    cj_add_u32(ctx, instr);
-    return;
-  }
 }
 
 static inline void cj_movk(cj_ctx* ctx, cj_operand dst, cj_operand src) {
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
-    int rn = 0;
+
     uint64_t raw_imm = src.constant;
     uint64_t imm = raw_imm;
     imm &= ((1u << 16) - 1u);
@@ -11102,7 +10909,7 @@ static inline void cj_movn(cj_ctx* ctx, cj_operand dst, cj_operand src) {
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
-    int rn = 0;
+
     uint64_t raw_imm = src.constant;
     uint64_t imm = raw_imm;
     imm &= ((1u << 16) - 1u);
@@ -11152,7 +10959,7 @@ static inline void cj_movz(cj_ctx* ctx, cj_operand dst, cj_operand src) {
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
-    int rn = 0;
+
     uint64_t raw_imm = src.constant;
     uint64_t imm = raw_imm;
     imm &= ((1u << 16) - 1u);
@@ -11633,22 +11440,8 @@ static inline void cj_orr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
     int rn = rd;
-    uint64_t imm = src.constant;
+
     uint32_t instr = 0x32000000;
-    instr &= ~((1u << 5) - 1u);
-    instr |= (rd & ((1u << 5) - 1u));
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0xB2000000;
-    instr |= (1 << 31);
     instr &= ~((1u << 5) - 1u);
     instr |= (rd & ((1u << 5) - 1u));
     instr &= ~(((1u << 5) - 1u) << 5);
@@ -12156,7 +11949,7 @@ static inline void cj_ror(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
     int rn = rd;
-    uint64_t imm = src.constant;
+
     uint32_t instr = 0x13800000;
     int sf = arm64_is_64bit(dst.reg) ? 1 : 0;
     instr |= (sf << 31);
@@ -13832,11 +13625,12 @@ static inline void cj_st1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     cj_add_u32(ctx, instr);
     return;
   }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
+  if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
     int rn = rd;
-    uint64_t imm = src.constant;
+    int rm = arm64_parse_reg(src.reg);
+    if (rm < 0) return;
     uint32_t instr = 0x0C802000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -13859,65 +13653,12 @@ static inline void cj_st1(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     cj_add_u32(ctx, instr);
     return;
   }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0C802000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);
-    cj_add_u32(ctx, instr);
-    return;
-  }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
     int rn = rd;
     int rm = arm64_parse_reg(src.reg);
     if (rm < 0) return;
-    uint32_t instr = 0x0C802000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0C802000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    int rm = arm64_parse_reg(src.reg);
-    if (rm < 0) return;
-    uint32_t instr = 0x0C802000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    instr &= ~(((1u << 5) - 1u) << 16);
-    instr |= ((rn & ((1u << 5) - 1u)) << 16);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
     uint32_t instr = 0x0C802000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -13986,17 +13727,6 @@ static inline void cj_st2(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     cj_add_u32(ctx, instr);
     return;
   }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0C9F8000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
-    cj_add_u32(ctx, instr);
-    return;
-  }
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
@@ -14023,8 +13753,9 @@ static inline void cj_st2g(cj_ctx* ctx, cj_operand dst, cj_operand src) {
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
-    int rn = rd;
+
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0xD9A00400;
     cj_add_u32(ctx, instr);
     return;
@@ -14066,17 +13797,6 @@ static inline void cj_st3(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
     instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0C9F4000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
     cj_add_u32(ctx, instr);
     return;
   }
@@ -14137,17 +13857,6 @@ static inline void cj_st4(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
     instr &= ~((1u << 5) - 1u);
     instr |= (rn & ((1u << 5) - 1u));
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t imm = src.constant;
-    uint32_t instr = 0x0C9F0000;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rd & ((1u << 5) - 1u)) << 5);
     cj_add_u32(ctx, instr);
     return;
   }
@@ -14471,8 +14180,9 @@ static inline void cj_stg(cj_ctx* ctx, cj_operand dst, cj_operand src) {
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
-    int rn = rd;
+
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0xD9200400;
     cj_add_u32(ctx, instr);
     return;
@@ -14495,7 +14205,7 @@ static inline void cj_stgp(cj_ctx* ctx, cj_operand dst, cj_operand src) {
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
-    int rn = rd;
+
     int rm = arm64_parse_reg(src.reg);
     if (rm < 0) return;
     uint32_t instr = 0x68800000;
@@ -14511,7 +14221,7 @@ static inline void cj_stllr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = arm64_parse_reg(src.reg);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(dst.reg);
+
     
     uint32_t instr = 0x88800000;
     
@@ -14530,7 +14240,7 @@ static inline void cj_stllrb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = arm64_parse_reg(src.reg);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(dst.reg);
+
     
     uint32_t instr = 0x08800000;
     
@@ -14549,7 +14259,7 @@ static inline void cj_stllrh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = arm64_parse_reg(src.reg);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(dst.reg);
+
     
     uint32_t instr = 0x48800000;
     
@@ -14568,7 +14278,7 @@ static inline void cj_stlr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = arm64_parse_reg(src.reg);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(dst.reg);
+
     
     uint32_t instr = 0x88808000;
     
@@ -14587,7 +14297,7 @@ static inline void cj_stlrb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = arm64_parse_reg(src.reg);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(dst.reg);
+
     
     uint32_t instr = 0x08808000;
     
@@ -14606,7 +14316,7 @@ static inline void cj_stlrh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     int rn = arm64_parse_reg(src.reg);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(dst.reg);
+
     
     uint32_t instr = 0x48808000;
     
@@ -14624,6 +14334,7 @@ static inline void cj_stlur(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x99000000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -14640,6 +14351,7 @@ static inline void cj_stlurb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x19000000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -14656,6 +14368,7 @@ static inline void cj_stlurh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x59000000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -14677,7 +14390,7 @@ static inline void cj_stlxp(cj_ctx* ctx, cj_operand status, cj_operand val1, cj_
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(val1.reg);
+
     
     uint32_t instr = 0x88208000;
     
@@ -14700,7 +14413,7 @@ static inline void cj_stlxr(cj_ctx* ctx, cj_operand status, cj_operand value, cj
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(value.reg);
+
     
     uint32_t instr = 0x88008000;
     
@@ -14722,7 +14435,7 @@ static inline void cj_stlxrb(cj_ctx* ctx, cj_operand status, cj_operand value, c
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(value.reg);
+
     
     uint32_t instr = 0x08008000;
     
@@ -14744,7 +14457,7 @@ static inline void cj_stlxrh(cj_ctx* ctx, cj_operand status, cj_operand value, c
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(value.reg);
+
     
     uint32_t instr = 0x48008000;
     
@@ -15603,6 +15316,7 @@ static inline void cj_sttr(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0xB8000800;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -15619,6 +15333,7 @@ static inline void cj_sttrb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x38000800;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -15635,6 +15350,7 @@ static inline void cj_sttrh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x78000800;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -15843,6 +15559,7 @@ static inline void cj_stur(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0xB8000000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -15859,6 +15576,7 @@ static inline void cj_sturb(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x38000000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -15875,6 +15593,7 @@ static inline void cj_sturh(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0x78000000;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rd & ((1u << 5) - 1u)) << 5);
@@ -15896,7 +15615,7 @@ static inline void cj_stxp(cj_ctx* ctx, cj_operand status, cj_operand val1, cj_o
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(val1.reg);
+
     
     uint32_t instr = 0x88200000;
     
@@ -15919,7 +15638,7 @@ static inline void cj_stxr(cj_ctx* ctx, cj_operand status, cj_operand value, cj_
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(value.reg);
+
     
     uint32_t instr = 0x88000000;
     
@@ -15941,7 +15660,7 @@ static inline void cj_stxrb(cj_ctx* ctx, cj_operand status, cj_operand value, cj
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(value.reg);
+
     
     uint32_t instr = 0x08000000;
     
@@ -15963,7 +15682,7 @@ static inline void cj_stxrh(cj_ctx* ctx, cj_operand status, cj_operand value, cj
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(value.reg);
+
     
     uint32_t instr = 0x48000000;
     
@@ -15980,8 +15699,9 @@ static inline void cj_stz2g(cj_ctx* ctx, cj_operand dst, cj_operand src) {
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
-    int rn = rd;
+
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0xD9E00400;
     cj_add_u32(ctx, instr);
     return;
@@ -15992,8 +15712,9 @@ static inline void cj_stzg(cj_ctx* ctx, cj_operand dst, cj_operand src) {
   if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
-    int rn = rd;
+
     uint64_t imm = src.constant;
+    imm &= ((1u << 9) - 1u);
     uint32_t instr = 0xD9600400;
     cj_add_u32(ctx, instr);
     return;
@@ -16079,6 +15800,7 @@ static inline void cj_sub(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 12) - 1u);
     if (imm > 4095) return;
     uint32_t instr = 0x51000000;
     int sf = arm64_is_64bit(dst.reg) ? 1 : 0;
@@ -16152,7 +15874,7 @@ static inline void cj_subp(cj_ctx* ctx, cj_operand dst, cj_operand src) {
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
-    int rn = rd;
+
     int rm = arm64_parse_reg(src.reg);
     if (rm < 0) return;
     uint32_t instr = 0x9AC00000;
@@ -16165,7 +15887,7 @@ static inline void cj_subps(cj_ctx* ctx, cj_operand dst, cj_operand src) {
   if (dst.type == CJ_REGISTER && src.type == CJ_REGISTER && src.extend.kind == CJ_EXTEND_KIND_NONE && !src.extend.has_amount) {
     int rd = arm64_parse_reg(dst.reg);
     if (rd < 0) return;
-    int rn = rd;
+
     int rm = arm64_parse_reg(src.reg);
     if (rm < 0) return;
     uint32_t instr = 0xBAC00000;
@@ -16250,6 +15972,7 @@ static inline void cj_subs(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     if (rd < 0) return;
     int rn = rd;
     uint64_t imm = src.constant;
+    imm &= ((1u << 12) - 1u);
     if (imm > 4095) return;
     uint32_t instr = 0x71000000;
     int sf = arm64_is_64bit(dst.reg) ? 1 : 0;
@@ -16446,7 +16169,7 @@ static inline void cj_swpab(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_operan
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38208000;
     
@@ -16468,7 +16191,7 @@ static inline void cj_swpalb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_opera
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38208000;
     
@@ -16490,7 +16213,7 @@ static inline void cj_swpb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_operand
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38208000;
     
@@ -16512,7 +16235,7 @@ static inline void cj_swplb(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_operan
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x38208000;
     
@@ -16534,7 +16257,7 @@ static inline void cj_swpah(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_operan
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78208000;
     
@@ -16556,7 +16279,7 @@ static inline void cj_swpalh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_opera
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78208000;
     
@@ -16578,7 +16301,7 @@ static inline void cj_swph(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_operand
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78208000;
     
@@ -16600,7 +16323,7 @@ static inline void cj_swplh(cj_ctx* ctx, cj_operand rs, cj_operand rt, cj_operan
     int rn = arm64_parse_reg(mem.mem.base);
     if (rn < 0) return;
     
-    int is64 = arm64_is_64bit(rs.reg);
+
     
     uint32_t instr = 0x78208000;
     
@@ -16782,19 +16505,6 @@ static inline void cj_tst(cj_ctx* ctx, cj_operand dst, cj_operand src) {
     uint64_t raw_imm = src.constant;
     uint64_t imm = raw_imm;
     uint32_t instr = 0x7200001F;
-    instr &= ~(((1u << 5) - 1u) << 5);
-    instr |= ((rn & ((1u << 5) - 1u)) << 5);
-    cj_add_u32(ctx, instr);
-    return;
-  }
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
-    int rd = arm64_parse_reg(dst.reg);
-    if (rd < 0) return;
-    int rn = rd;
-    uint64_t raw_imm = src.constant;
-    uint64_t imm = raw_imm;
-    uint32_t instr = 0xF200001F;
-    if (arm64_is_64bit(dst.reg)) instr = 0xF200001F;
     instr &= ~(((1u << 5) - 1u) << 5);
     instr |= ((rn & ((1u << 5) - 1u)) << 5);
     cj_add_u32(ctx, instr);
