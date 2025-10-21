@@ -23,7 +23,7 @@ cc -std=c11 -O2 -Isrc examples/add.c src/ctx.c -o add_example
 cc -std=c11 -O2 -Isrc examples/fibonacci.c src/ctx.c -o fibonacci_example
 ./fibonacci_example
 
-cc -std=c11 -O2 -Isrc examples/hl_fibonacci.c src/builder.c src/ctx.c -o hl_fibonacci_example
+cc -std=c11 -O2 -Isrc examples/hl_fibonacci.c src/ctx.c -o hl_fibonacci_example
 ./hl_fibonacci_example
 
 cc -std=c11 -O2 -Isrc examples/simd.c src/ctx.c -o simd_example

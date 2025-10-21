@@ -4,7 +4,9 @@
   "description": "Code generator for cj JIT framework",
   "private": true,
   "scripts": {
-    "generate": "node codegen/generator.js"
+    "generate:x86": "node codegen/x86_encoder.js",
+    "generate:arm64": "node codegen/arm64_encoder.js",
+    "generate": "npm run generate:x86 && npm run generate:arm64"
   },
   "dependencies": {
     "asmdb": "^0.0.3"

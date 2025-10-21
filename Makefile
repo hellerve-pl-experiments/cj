@@ -1,16 +1,16 @@
-TARGET=libcj.a
+TARGET=libcj.so
 BUILDDIR=bin/
 PREFIX=/usr/local/lib/
 SOURCES=$(wildcard src/*.c src/arch/*.c src/arch/*/*.c)
 override CFLAGS+=-std=c11 -O2 -Wno-gnu
-SHARED=-shared
+LDFLAGS+=-shared
 DEVFLAGS=-Werror -Wall -g -fPIC -DNDEBUG -Wfloat-equal -Wundef -Wwrite-strings -Wuninitialized -pedantic -O0
 
 .PHONY: all codegen dev example demo clean install uninstall
 
 all:
 	mkdir -p $(BUILDDIR)
-	$(CC) $(SOURCES) -o $(BUILDDIR)$(TARGET) $(CFLAGS) $(SHARED)
+	$(CC) $(SOURCES) -o $(BUILDDIR)$(TARGET) $(CFLAGS) $(LDFLAGS)
 
 codegen: codegen_x86 codegen_arm64
 
@@ -24,7 +24,7 @@ codegen_arm64:
 
 dev:
 	mkdir -p $(BUILDDIR)
-	$(CC) $(SOURCES) -o $(BUILDDIR)$(TARGET) $(CFLAGS) $(DEVFLAGS) $(SHARED)
+	$(CC) $(SOURCES) -o $(BUILDDIR)$(TARGET) $(CFLAGS) $(DEVFLAGS) $(LDFLAGS)
 
 install: all
 	install $(BUILDDIR)$(TARGET) $(PREFIX)$(TARGET)

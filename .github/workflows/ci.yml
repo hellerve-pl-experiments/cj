@@ -17,11 +17,7 @@ jobs:
           sudo apt-get install -y clang-format clang-tidy
 
       - name: Run clang-format
-        run: |
-          files=$(git ls-files 'src/*.c' 'src/*.h')
-          if [ -n "$files" ]; then
-            clang-format --style=file --dry-run --Werror $files
-          fi
+        run: ./scripts/clang-format-check.sh
 
       - name: Run clang-tidy
         run: |
