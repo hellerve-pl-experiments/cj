@@ -1,4 +1,6 @@
 #define _DEFAULT_SOURCE
+#include <assert.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -25,10 +27,20 @@ cj_ctx *create_cj_ctx(void)
 
 void grow_cj_ctx(cj_ctx *ctx)
 {
-  uint64_t half = ctx->size;
-  ctx->size *= 2;
-  ctx->mem = realloc(ctx->mem, ctx->size);
-  memset(ctx->mem + half, 0, half);
+  if (!ctx)
+    return;
+
+  uint64_t old_size = ctx->size;
+  uint64_t new_size = old_size * 2;
+  if (new_size < old_size)
+    return;
+  uint8_t *new_mem = realloc(ctx->mem, new_size);
+  if (!new_mem)
+    return;
+
+  ctx->mem = new_mem;
+  memset(ctx->mem + old_size, 0, old_size);
+  ctx->size = new_size;
 }
 
 void destroy_cj_ctx(cj_ctx *ctx)
@@ -53,7 +65,9 @@ cj_fn create_cj_fn(cj_ctx *ctx)
     return NULL;
   }
 
-  memcpy(raw + sizeof(uint64_t), ctx->mem, code_size);
+  assert(ctx->mem);
+  uint8_t *dest = raw + sizeof(uint64_t);
+  memcpy(dest, ctx->mem, code_size);
   *((uint64_t *)raw) = code_size;
 
   if (mprotect(raw, total_size, PROT_READ | PROT_EXEC) != 0)

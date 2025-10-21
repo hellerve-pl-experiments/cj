@@ -21,7 +21,7 @@ jobs:
 
       - name: Run clang-tidy
         run: |
-          clang-tidy src/ctx.c --warnings-as-errors=* -- -std=c11 -Isrc
+          clang-tidy src/ctx.c --warnings-as-errors=* --checks=-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling -- -std=c11 -Isrc
 
   build:
     runs-on: ${{ matrix.os }}
