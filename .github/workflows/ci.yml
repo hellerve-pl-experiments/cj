@@ -18,7 +18,7 @@ jobs:
 
       - name: Run clang-format
         run: |
-          files=$(git ls-files '*.c' '*.h' | grep -v '^src/arch/')
+          files=$(git ls-files 'src/*.c' 'src/*.h')
           if [ -n "$files" ]; then
             clang-format --style=file --dry-run --Werror $files
           fi
