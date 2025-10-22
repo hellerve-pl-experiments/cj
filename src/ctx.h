@@ -48,6 +48,11 @@ typedef struct
   cj_fixup *fixups;
   int num_fixups;
   int fixup_capacity;
+
+  uint8_t *executable_base;
+  uint8_t *executable_raw;
+  size_t executable_size;
+  uint64_t executable_code_size;
 } cj_ctx;
 
 cj_ctx *create_cj_ctx(void);

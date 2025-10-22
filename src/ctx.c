@@ -22,21 +22,24 @@ cj_ctx *create_cj_ctx(void)
   res->num_fixups = 0;
   res->fixups = malloc(sizeof(cj_fixup) * res->fixup_capacity);
 
+  res->executable_base = NULL;
+  res->executable_raw = NULL;
+  res->executable_size = 0;
+  res->executable_code_size = 0;
+
   return res;
 }
 
 void grow_cj_ctx(cj_ctx *ctx)
 {
-  if (!ctx)
-    return;
+  if (!ctx) return;
 
   uint64_t old_size = ctx->size;
   uint64_t new_size = old_size * 2;
-  if (new_size < old_size)
-    return;
+  if (new_size < old_size) return;
+
   uint8_t *new_mem = realloc(ctx->mem, new_size);
-  if (!new_mem)
-    return;
+  if (!new_mem) return;
 
   ctx->mem = new_mem;
   memset(ctx->mem + old_size, 0, old_size);
@@ -53,17 +56,13 @@ void destroy_cj_ctx(cj_ctx *ctx)
 
 cj_fn create_cj_fn(cj_ctx *ctx)
 {
-  if (!ctx->len)
-    return NULL;
+  if (!ctx->len) return NULL;
 
   uint64_t code_size = ctx->len;
   size_t total_size = sizeof(uint64_t) + (size_t)code_size;
 
   uint8_t *raw = mmap(NULL, total_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-  if (raw == MAP_FAILED)
-  {
-    return NULL;
-  }
+  if (raw == MAP_FAILED) return NULL;
 
   assert(ctx->mem);
   uint8_t *dest = raw + sizeof(uint64_t);
@@ -75,6 +74,11 @@ cj_fn create_cj_fn(cj_ctx *ctx)
     munmap(raw, total_size);
     return NULL;
   }
+
+  ctx->executable_raw = raw;
+  ctx->executable_base = dest;
+  ctx->executable_size = total_size;
+  ctx->executable_code_size = code_size;
 
   // clear the I cache for ARM64
   __builtin___clear_cache((char *)raw, (char *)raw + total_size);
@@ -89,8 +93,7 @@ cj_fn create_cj_fn(cj_ctx *ctx)
 void destroy_cj_fn(cj_ctx *ctx, cj_fn mem)
 {
   (void)ctx;
-  if (!mem)
-    return;
+  if (!mem) return;
 
 // yes, yes. unsafe. boo-hoo.
 #pragma GCC diagnostic push
@@ -102,12 +105,19 @@ void destroy_cj_fn(cj_ctx *ctx, cj_fn mem)
   size_t total_size = sizeof(uint64_t) + (size_t)code_size;
 
   munmap(raw, total_size);
+
+  if (ctx)
+  {
+    ctx->executable_base = NULL;
+    ctx->executable_raw = NULL;
+    ctx->executable_size = 0;
+    ctx->executable_code_size = 0;
+  }
 }
 
 void cj_add_u8(cj_ctx *ctx, uint8_t byte)
 {
-  if (ctx->len >= ctx->size)
-    grow_cj_ctx(ctx);
+  if (ctx->len >= ctx->size) grow_cj_ctx(ctx);
 
   ctx->mem[ctx->len++] = byte;
 }
@@ -132,8 +142,7 @@ void cj_add_u64(cj_ctx *ctx, uint64_t b8)
 
 void cj_add_bytes(cj_ctx *ctx, uint8_t *bytes, uint64_t len)
 {
-  for (uint64_t i = 0; i < len; i++)
-    cj_add_u8(ctx, bytes[i]);
+  for (uint64_t i = 0; i < len; i++) cj_add_u8(ctx, bytes[i]);
 }
 
 cj_label cj_create_label(cj_ctx *ctx)
@@ -241,19 +250,12 @@ void cj_emit_branch(cj_ctx *ctx, uint32_t base_instr, cj_label label, uint8_t of
 void cj_emit_x86_rel(cj_ctx *ctx, const uint8_t *opcode, size_t opcode_len, uint8_t disp_width,
                      cj_label label)
 {
-  if (!ctx || !opcode || opcode_len == 0 || disp_width == 0)
-    return;
+  if (!ctx || !opcode || opcode_len == 0 || disp_width == 0) return;
 
-  for (size_t i = 0; i < opcode_len; i++)
-  {
-    cj_add_u8(ctx, opcode[i]);
-  }
+  for (size_t i = 0; i < opcode_len; i++) cj_add_u8(ctx, opcode[i]);
 
   uint64_t disp_pos = ctx->len;
-  for (uint8_t i = 0; i < disp_width; i++)
-  {
-    cj_add_u8(ctx, 0);
-  }
+  for (uint8_t i = 0; i < disp_width; i++) cj_add_u8(ctx, 0);
 
   int label_known =
       (label.id >= 0 && label.id < ctx->num_labels && ctx->label_positions[label.id] != UINT64_MAX);
@@ -266,10 +268,7 @@ void cj_emit_x86_rel(cj_ctx *ctx, const uint8_t *opcode, size_t opcode_len, uint
     if (rel < min || rel > max)
       return;
 
-    for (uint8_t b = 0; b < disp_width; b++)
-    {
-      ctx->mem[disp_pos + b] = (uint8_t)((rel >> (8 * b)) & 0xFF);
-    }
+    for (uint8_t b = 0; b < disp_width; b++) ctx->mem[disp_pos + b] = (uint8_t)((rel >> (8 * b)) & 0xFF);
   }
   else
   {
@@ -288,16 +287,16 @@ void cj_emit_x86_rel(cj_ctx *ctx, const uint8_t *opcode, size_t opcode_len, uint
 
 void *cj_resolve_label(const cj_ctx *ctx, cj_fn module, cj_label label)
 {
-  if (!ctx || !module)
-    return NULL;
+  if (!ctx || !module) return NULL;
 
-  if (label.id < 0 || label.id >= ctx->num_labels)
-    return NULL;
+  if (label.id < 0 || label.id >= ctx->num_labels) return NULL;
 
   uint64_t pos = ctx->label_positions[label.id];
-  if (pos == UINT64_MAX)
-    return NULL;
+  if (pos == UINT64_MAX) return NULL;
 
-  uint8_t *base = (uint8_t *)(void *)module;
-  return (void *)(base + pos);
+  if (!ctx->executable_base) return NULL;
+
+  if (pos >= ctx->executable_code_size) return NULL;
+
+  return (void *)(ctx->executable_base + pos);
 }

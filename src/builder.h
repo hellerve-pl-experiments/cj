@@ -96,8 +96,8 @@ static inline cj_operand cj_builder_call_unary(cj_ctx *ctx, cj_builder_scratch *
 static inline size_t align_stack_size(size_t size)
 {
   const size_t alignment = 16;
-  if (size == 0)
-    return 0;
+  if (size == 0) return 0;
+
   size_t mask = alignment - 1;
   return (size + mask) & ~mask;
 }
@@ -116,8 +116,7 @@ static inline void cj_builder_fn_prologue_with_link_save(cj_ctx *ctx, size_t req
 
 static inline void cj_builder_fn_epilogue(cj_ctx *ctx, const cj_builder_frame *frame)
 {
-  if (!ctx)
-    return;
+  if (!ctx) return;
   size_t aligned = frame ? frame->stack_size : 0;
   int save_lr = (frame && frame->save_lr);
 
@@ -157,8 +156,7 @@ static inline void cj_builder_fn_epilogue(cj_ctx *ctx, const cj_builder_frame *f
 
 static inline void cj_builder_return(cj_ctx *ctx, const cj_builder_frame *frame)
 {
-  if (!ctx)
-    return;
+  if (!ctx) return;
   cj_builder_fn_epilogue(ctx, frame);
   cj_ret(ctx);
 }
@@ -333,30 +331,26 @@ static inline cj_builder_block cj_builder_loop_begin(cj_ctx *ctx)
 static inline void cj_builder_loop_condition(cj_ctx *ctx, cj_builder_block block, cj_operand lhs,
                                              cj_operand rhs, cj_condition exit_cond)
 {
-  if (!ctx)
-    return;
+  if (!ctx) return;
   cj_cmp(ctx, lhs, rhs);
   branch_on_condition(ctx, exit_cond, block.exit);
 }
 
 static inline void cj_builder_loop_continue(cj_ctx *ctx, cj_builder_block block)
 {
-  if (!ctx)
-    return;
+  if (!ctx) return;
   branch_unconditional(ctx, block.entry);
 }
 
 static inline void cj_builder_loop_break(cj_ctx *ctx, cj_builder_block block)
 {
-  if (!ctx)
-    return;
+  if (!ctx) return;
   branch_unconditional(ctx, block.exit);
 }
 
 static inline void cj_builder_loop_end(cj_ctx *ctx, cj_builder_block block)
 {
-  if (!ctx)
-    return;
+  if (!ctx) return;
   branch_unconditional(ctx, block.entry);
   cj_mark_label(ctx, block.exit);
 }
@@ -375,8 +369,7 @@ cj_builder_if_block cj_builder_if(cj_ctx *ctx, cj_operand lhs, cj_operand rhs, c
 
 void cj_builder_else(cj_ctx *ctx, cj_builder_if_block *block)
 {
-  if (!ctx || !block)
-    return;
+  if (!ctx || !block) return;
   branch_unconditional(ctx, block->end_label);
   cj_mark_label(ctx, block->else_label);
   block->has_else = 1;
@@ -384,8 +377,7 @@ void cj_builder_else(cj_ctx *ctx, cj_builder_if_block *block)
 
 void cj_builder_endif(cj_ctx *ctx, cj_builder_if_block *block)
 {
-  if (!ctx || !block)
-    return;
+  if (!ctx || !block) return;
   if (!block->has_else)
   {
     cj_mark_label(ctx, block->else_label);
@@ -404,10 +396,7 @@ static inline cj_builder_for_loop cj_builder_for_begin(cj_ctx *ctx, cj_operand c
       .exit_cond = exit_cond,
   };
 
-  if (counter.type == CJ_REGISTER)
-  {
-    cj_mov(ctx, counter, start);
-  }
+  if (counter.type == CJ_REGISTER) cj_mov(ctx, counter, start);
 
   loop.block = cj_builder_loop_begin(ctx);
   cj_builder_loop_condition(ctx, loop.block, counter, limit, exit_cond);
@@ -416,23 +405,20 @@ static inline cj_builder_for_loop cj_builder_for_begin(cj_ctx *ctx, cj_operand c
 
 static inline void cj_builder_for_continue(cj_ctx *ctx, cj_builder_for_loop *loop)
 {
-  if (!ctx || !loop)
-    return;
+  if (!ctx || !loop) return;
   cj_add(ctx, loop->counter, loop->step);
   cj_builder_loop_continue(ctx, loop->block);
 }
 
 static inline void cj_builder_for_break(cj_ctx *ctx, cj_builder_for_loop *loop)
 {
-  if (!ctx || !loop)
-    return;
+  if (!ctx || !loop) return;
   cj_builder_loop_break(ctx, loop->block);
 }
 
 static inline void cj_builder_for_end(cj_ctx *ctx, cj_builder_for_loop *loop)
 {
-  if (!ctx || !loop)
-    return;
+  if (!ctx || !loop) return;
   cj_add(ctx, loop->counter, loop->step);
   cj_builder_loop_end(ctx, loop->block);
 }
@@ -456,8 +442,8 @@ static inline cj_operand cj_builder_assign(cj_ctx *ctx, cj_operand dst, cj_opera
     for (int shift = 16; shift < (is64 ? 64 : 32); shift += 16)
     {
       uint16_t part = (uint16_t)((value >> shift) & 0xFFFFu);
-      if (!part)
-        continue;
+      if (!part) continue;
+
       uint64_t encoded = (uint64_t)part | ((uint64_t)(shift / 16) << 16);
       cj_operand next = cj_make_constant(encoded);
       cj_movk(ctx, dst, next);
@@ -525,21 +511,15 @@ static inline cj_operand cj_builder_arg_int(cj_ctx *ctx, unsigned index)
 static inline void cj_builder_return_value(cj_ctx *ctx, const cj_builder_frame *frame,
                                            cj_operand value)
 {
-  if (!ctx)
-    return;
+  if (!ctx) return;
   cj_operand ret = get_return_operand();
   int needs_move = 1;
   if (value.type == CJ_REGISTER && value.reg && ret.reg)
   {
-    if (strcmp(value.reg, ret.reg) == 0)
-    {
-      needs_move = 0;
-    }
+    if (strcmp(value.reg, ret.reg) == 0) needs_move = 0;
   }
-  if (needs_move)
-  {
-    cj_mov(ctx, ret, value);
-  }
+  if (needs_move) cj_mov(ctx, ret, value);
+
   cj_builder_return(ctx, frame);
 }
 
@@ -554,8 +534,7 @@ static inline cj_operand cj_builder_zero_operand(void)
 
 static inline void cj_builder_clear(cj_ctx *ctx, cj_operand dst)
 {
-  if (!ctx)
-    return;
+  if (!ctx) return;
 #if defined(__x86_64__) || defined(_M_X64)
   if (dst.type == CJ_REGISTER)
   {
@@ -603,8 +582,7 @@ static inline unsigned cj_builder_arg_int_capacity(void)
 
 static inline void cj_builder_scratch_init(cj_builder_scratch *scratch)
 {
-  if (!scratch)
-    return;
+  if (!scratch) return;
   scratch->depth = 0;
 }
 
@@ -642,8 +620,7 @@ static inline cj_operand cj_builder_call_unary(cj_ctx *ctx, cj_builder_scratch *
 static inline cj_operand cj_builder_call(cj_ctx *ctx, cj_builder_scratch *scratch, cj_label target,
                                          const cj_operand *args, size_t arg_count)
 {
-  if (!ctx)
-    return cj_builder_return_reg();
+  if (!ctx) return cj_builder_return_reg();
 
   unsigned capacity = cj_builder_arg_int_capacity();
   assert(arg_count <= capacity);
@@ -654,8 +631,7 @@ static inline cj_operand cj_builder_call(cj_ctx *ctx, cj_builder_scratch *scratc
     cj_builder_assign(ctx, reg, args[i]);
   }
 
-  if (scratch)
-    cj_builder_scratch_release(scratch);
+  if (scratch) cj_builder_scratch_release(scratch);
 
   cj_builder_call_label(ctx, target);
 
@@ -672,8 +648,7 @@ static inline cj_operand cj_builder_call(cj_ctx *ctx, cj_builder_scratch *scratc
 static inline void cj_builder_fn_prologue_ex(cj_ctx *ctx, size_t requested_stack_bytes,
                                              cj_builder_frame *frame, int save_lr)
 {
-  if (!ctx)
-    return;
+  if (!ctx) return;
   assert(!save_lr || frame);
 
   size_t aligned = align_stack_size(requested_stack_bytes);
