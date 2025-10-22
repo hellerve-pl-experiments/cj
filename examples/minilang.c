@@ -113,7 +113,6 @@ typedef struct {
   char param[32];
   node *body;
   cj_label entry;
-  size_t offset;
   int (*fn)(int);
 } function;
 static node *parse_expr(lexer *lx, node_arena *arena, const char *param) {
@@ -301,22 +300,13 @@ int main(void) {
     fprintf(stderr, "no main function\n");
     return 1;
   }
-  if (main_idx != 0) {
-    function tmp = functions[0];
-    functions[0] = functions[main_idx];
-    functions[main_idx] = tmp;
-    main_idx = 0;
-  }
-
   resolve_calls(&arena, functions, function_count);
 
   cj_ctx *cj = create_cj_ctx();
   for (int i = 0; i < function_count; i++) functions[i].entry = cj_create_label(cj);
 
   codegen cg = {.cj = cj, .functions = functions};
-  emit_function(&cg, &functions[main_idx]);
-  for (int i = 0; i < function_count; i++)
-    if (i != main_idx) emit_function(&cg, &functions[i]);
+  for (int i = 0; i < function_count; i++) emit_function(&cg, &functions[i]);
 
   cj_fn module = create_cj_fn(cj);
   if (!module) {
@@ -331,8 +321,9 @@ int main(void) {
   }
 
   printf("minilang demo:\n");
+  function *main_fn = &functions[main_idx];
   for (int i = 0; i <= 5; i++) {
-    int result = functions[main_idx].fn(i);
+    int result = main_fn->fn(i);
     printf("  main(%d) = %d\n", i, result);
   }
 
