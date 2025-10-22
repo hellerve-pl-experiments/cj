@@ -67,3 +67,4 @@ void cj_emit_branch(cj_ctx *ctx, uint32_t base_instr, cj_label label, uint8_t of
                     uint8_t offset_shift);
 void cj_emit_x86_rel(cj_ctx *ctx, const uint8_t *opcode, size_t opcode_len, uint8_t disp_width,
                      cj_label label);
+void *cj_resolve_label(const cj_ctx *ctx, cj_fn module, cj_label label);

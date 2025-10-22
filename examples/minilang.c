@@ -398,8 +398,8 @@ int main(void)
 
   for (int i = 0; i < function_count; ++i)
   {
-    size_t offset = cj->label_positions[functions[i].entry.id];
-    functions[i].fn = (int (*)(int))((uint8_t *)(void *)module + offset);
+    void *addr = cj_resolve_label(cj, module, functions[i].entry);
+    functions[i].fn = (int (*)(int))addr;
   }
 
   printf("minilang demo:\n");

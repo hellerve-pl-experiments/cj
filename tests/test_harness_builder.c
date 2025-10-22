@@ -100,8 +100,7 @@ static void test_call_helper(void)
   cj_fn module = create_cj_fn(cj);
   assert(module);
 
-  size_t entry_offset = cj->label_positions[entry.id];
-  fn1_t fn = (fn1_t)((uint8_t *)(void *)module + entry_offset);
+  fn1_t fn = (fn1_t)cj_resolve_label(cj, module, entry);
   assert(fn);
   assert(fn(10) == 13);
   assert(fn(-4) == -1);

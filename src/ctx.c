@@ -285,3 +285,19 @@ void cj_emit_x86_rel(cj_ctx *ctx, const uint8_t *opcode, size_t opcode_len, uint
     ctx->num_fixups++;
   }
 }
+
+void *cj_resolve_label(const cj_ctx *ctx, cj_fn module, cj_label label)
+{
+  if (!ctx || !module)
+    return NULL;
+
+  if (label.id < 0 || label.id >= ctx->num_labels)
+    return NULL;
+
+  uint64_t pos = ctx->label_positions[label.id];
+  if (pos == UINT64_MAX)
+    return NULL;
+
+  uint8_t *base = (uint8_t *)(void *)module;
+  return (void *)(base + pos);
+}

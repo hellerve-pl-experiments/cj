@@ -84,9 +84,8 @@ static inline cj_operand cj_builder_scratch_acquire(cj_builder_scratch *scratch)
 static inline void cj_builder_scratch_release(cj_builder_scratch *scratch);
 static inline unsigned cj_builder_arg_int_capacity(void);
 static inline void cj_builder_call_label(cj_ctx *ctx, cj_label target);
-static inline cj_operand
-cj_builder_call(cj_ctx *ctx, cj_builder_scratch *scratch, cj_label target,
-                const cj_operand *args, size_t arg_count);
+static inline cj_operand cj_builder_call(cj_ctx *ctx, cj_builder_scratch *scratch, cj_label target,
+                                         const cj_operand *args, size_t arg_count);
 static inline cj_operand cj_builder_call_unary(cj_ctx *ctx, cj_builder_scratch *scratch,
                                                cj_label target, cj_operand arg0);
 
@@ -640,9 +639,8 @@ static inline cj_operand cj_builder_call_unary(cj_ctx *ctx, cj_builder_scratch *
   return cj_builder_call(ctx, scratch, target, args, 1);
 }
 
-static inline cj_operand
-cj_builder_call(cj_ctx *ctx, cj_builder_scratch *scratch, cj_label target,
-                const cj_operand *args, size_t arg_count)
+static inline cj_operand cj_builder_call(cj_ctx *ctx, cj_builder_scratch *scratch, cj_label target,
+                                         const cj_operand *args, size_t arg_count)
 {
   if (!ctx)
     return cj_builder_return_reg();

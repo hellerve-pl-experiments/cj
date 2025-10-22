@@ -30,6 +30,8 @@ around abi registers, stack setup, and label plumbing, and it looks less scary.
 - `cj_builder_call_unary(ctx, scratch, label, arg)`: loads the first argument
   register, emits the right call/bl, and—when a scratch stack is supplied—moves
   the return value into a fresh scratch slot.
+- `cj_resolve_label(ctx, module, label)`: convert a recorded label to a
+  callable pointer after finalization.
 
 ## control flow
 
