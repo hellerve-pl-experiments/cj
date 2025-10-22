@@ -5,26 +5,24 @@
 #include "ctx.h"
 #include "op.h"
 
-typedef struct
-{
+typedef struct {
   size_t stack_size;
+  size_t lr_offset;
+  int save_lr;
 } cj_builder_frame;
 
-typedef struct
-{
+typedef struct {
   cj_label entry;
   cj_label exit;
 } cj_builder_block;
 
-typedef struct
-{
+typedef struct {
   cj_label else_label;
   cj_label end_label;
   int has_else;
 } cj_builder_if_block;
 
-typedef struct
-{
+typedef struct {
   cj_builder_block block;
   cj_operand counter;
   cj_operand limit;
@@ -32,8 +30,16 @@ typedef struct
   cj_condition exit_cond;
 } cj_builder_for_loop;
 
+typedef struct {
+  unsigned depth;
+} cj_builder_scratch;
+
 static inline void cj_builder_fn_prologue(cj_ctx *ctx, size_t requested_stack_bytes,
                                           cj_builder_frame *frame);
+static inline void cj_builder_fn_prologue_with_link_save(cj_ctx *ctx, size_t requested_stack_bytes,
+                                                         cj_builder_frame *frame);
+static inline void cj_builder_fn_prologue_ex(cj_ctx *ctx, size_t requested_stack_bytes,
+                                             cj_builder_frame *frame, int save_lr);
 static inline void cj_builder_fn_epilogue(cj_ctx *ctx, const cj_builder_frame *frame);
 static inline void cj_builder_return(cj_ctx *ctx, const cj_builder_frame *frame);
 
@@ -67,64 +73,50 @@ static inline void cj_builder_return_value(cj_ctx *ctx, const cj_builder_frame *
 static inline cj_operand cj_builder_zero_operand(void);
 static inline void cj_builder_clear(cj_ctx *ctx, cj_operand dst);
 static inline cj_operand cj_builder_scratch_reg(unsigned index);
+static inline unsigned cj_builder_scratch_capacity(void);
+static inline void cj_builder_scratch_init(cj_builder_scratch *scratch);
+static inline cj_operand cj_builder_scratch_acquire(cj_builder_scratch *scratch);
+static inline void cj_builder_scratch_release(cj_builder_scratch *scratch);
+static inline unsigned cj_builder_arg_int_capacity(void);
+static inline void cj_builder_call_label(cj_ctx *ctx, cj_label target);
+static inline cj_operand cj_builder_call(cj_ctx *ctx, cj_builder_scratch *scratch, cj_label target,
+                                         const cj_operand *args, size_t arg_count);
+static inline cj_operand cj_builder_call_unary(cj_ctx *ctx, cj_builder_scratch *scratch,
+                                               cj_label target, cj_operand arg0);
 
 #include <assert.h>
 #include <stdint.h>
 #include <string.h>
 
-static inline size_t align_stack_size(size_t size)
-{
+static inline size_t align_stack_size(size_t size) {
   const size_t alignment = 16;
-  if (size == 0)
-    return 0;
+  if (size == 0) return 0;
+
   size_t mask = alignment - 1;
   return (size + mask) & ~mask;
 }
 
 static inline void cj_builder_fn_prologue(cj_ctx *ctx, size_t requested_stack_bytes,
-                                          cj_builder_frame *frame)
-{
-  if (!ctx)
-    return;
-
-  size_t aligned = align_stack_size(requested_stack_bytes);
-  if (frame)
-    frame->stack_size = aligned;
-
-#if defined(__x86_64__) || defined(_M_X64)
-  cj_operand rbp = cj_make_register("rbp");
-  cj_operand rsp = cj_make_register("rsp");
-
-  cj_push(ctx, rbp);
-  cj_mov(ctx, rbp, rsp);
-
-  if (aligned)
-  {
-    cj_operand amount = cj_make_constant((uint64_t)aligned);
-    cj_sub(ctx, rsp, amount);
-  }
-#elif defined(__aarch64__) || defined(_M_ARM64)
-  cj_operand sp = cj_make_register("sp");
-  if (aligned)
-  {
-    cj_operand amount = cj_make_constant((uint64_t)aligned);
-    cj_sub(ctx, sp, amount);
-  }
-#endif
+                                          cj_builder_frame *frame) {
+  cj_builder_fn_prologue_ex(ctx, requested_stack_bytes, frame, 0);
 }
 
-static inline void cj_builder_fn_epilogue(cj_ctx *ctx, const cj_builder_frame *frame)
-{
-  if (!ctx)
-    return;
+static inline void cj_builder_fn_prologue_with_link_save(cj_ctx *ctx, size_t requested_stack_bytes,
+                                                         cj_builder_frame *frame) {
+  cj_builder_fn_prologue_ex(ctx, requested_stack_bytes, frame, 1);
+}
+
+static inline void cj_builder_fn_epilogue(cj_ctx *ctx, const cj_builder_frame *frame) {
+  if (!ctx) return;
   size_t aligned = frame ? frame->stack_size : 0;
+  int save_lr = (frame && frame->save_lr);
 
 #if defined(__x86_64__) || defined(_M_X64)
   cj_operand rbp = cj_make_register("rbp");
   cj_operand rsp = cj_make_register("rsp");
+  (void)save_lr;
 
-  if (aligned)
-  {
+  if (aligned) {
     cj_operand amount = cj_make_constant((uint64_t)aligned);
     cj_add(ctx, rsp, amount);
   }
@@ -132,27 +124,32 @@ static inline void cj_builder_fn_epilogue(cj_ctx *ctx, const cj_builder_frame *f
   cj_pop(ctx, rbp);
 #elif defined(__aarch64__) || defined(_M_ARM64)
   cj_operand sp = cj_make_register("sp");
+  size_t total = aligned + (save_lr ? 16 : 0);
 
-  if (aligned)
-  {
-    cj_operand amount = cj_make_constant((uint64_t)aligned);
+  if (save_lr) {
+    size_t lr_offset = frame ? frame->lr_offset : aligned;
+    cj_operand lr = cj_make_register("x30");
+    cj_operand slot = cj_make_memory("sp", NULL, 1, (int32_t)lr_offset);
+    cj_ldr(ctx, lr, slot);
+  }
+
+  if (total) {
+    cj_operand amount = cj_make_constant((uint64_t)total);
     cj_add(ctx, sp, amount);
   }
+#else
+  (void)save_lr;
 #endif
 }
 
-static inline void cj_builder_return(cj_ctx *ctx, const cj_builder_frame *frame)
-{
-  if (!ctx)
-    return;
+static inline void cj_builder_return(cj_ctx *ctx, const cj_builder_frame *frame) {
+  if (!ctx) return;
   cj_builder_fn_epilogue(ctx, frame);
   cj_ret(ctx);
 }
 
-static inline cj_condition invert_condition(cj_condition cond)
-{
-  switch (cond)
-  {
+static inline cj_condition invert_condition(cj_condition cond) {
+  switch (cond) {
   case CJ_COND_O:
     return CJ_COND_NO;
   case CJ_COND_NO:
@@ -190,11 +187,9 @@ static inline cj_condition invert_condition(cj_condition cond)
   }
 }
 
-static inline void branch_on_condition(cj_ctx *ctx, cj_condition cond, cj_label target)
-{
+static inline void branch_on_condition(cj_ctx *ctx, cj_condition cond, cj_label target) {
 #if defined(__x86_64__) || defined(_M_X64)
-  switch (cond)
-  {
+  switch (cond) {
   case CJ_COND_O:
     cj_jo(ctx, target);
     break;
@@ -247,8 +242,7 @@ static inline void branch_on_condition(cj_ctx *ctx, cj_condition cond, cj_label 
     assert(0 && "unsupported condition");
   }
 #elif defined(__aarch64__) || defined(_M_ARM64)
-  switch (cond)
-  {
+  switch (cond) {
   case CJ_COND_O:
     cj_bvs(ctx, target);
     break;
@@ -297,8 +291,7 @@ static inline void branch_on_condition(cj_ctx *ctx, cj_condition cond, cj_label 
 #endif
 }
 
-static inline void branch_unconditional(cj_ctx *ctx, cj_label target)
-{
+static inline void branch_unconditional(cj_ctx *ctx, cj_label target) {
 #if defined(__x86_64__) || defined(_M_X64)
   cj_jmp(ctx, target);
 #elif defined(__aarch64__) || defined(_M_ARM64)
@@ -306,8 +299,7 @@ static inline void branch_unconditional(cj_ctx *ctx, cj_label target)
 #endif
 }
 
-static inline cj_builder_block cj_builder_loop_begin(cj_ctx *ctx)
-{
+static inline cj_builder_block cj_builder_loop_begin(cj_ctx *ctx) {
   cj_builder_block block = {
       .entry = cj_create_label(ctx),
       .exit = cj_create_label(ctx),
@@ -317,38 +309,29 @@ static inline cj_builder_block cj_builder_loop_begin(cj_ctx *ctx)
 }
 
 static inline void cj_builder_loop_condition(cj_ctx *ctx, cj_builder_block block, cj_operand lhs,
-                                             cj_operand rhs, cj_condition exit_cond)
-{
-  if (!ctx)
-    return;
+                                             cj_operand rhs, cj_condition exit_cond) {
+  if (!ctx) return;
   cj_cmp(ctx, lhs, rhs);
   branch_on_condition(ctx, exit_cond, block.exit);
 }
 
-static inline void cj_builder_loop_continue(cj_ctx *ctx, cj_builder_block block)
-{
-  if (!ctx)
-    return;
+static inline void cj_builder_loop_continue(cj_ctx *ctx, cj_builder_block block) {
+  if (!ctx) return;
   branch_unconditional(ctx, block.entry);
 }
 
-static inline void cj_builder_loop_break(cj_ctx *ctx, cj_builder_block block)
-{
-  if (!ctx)
-    return;
+static inline void cj_builder_loop_break(cj_ctx *ctx, cj_builder_block block) {
+  if (!ctx) return;
   branch_unconditional(ctx, block.exit);
 }
 
-static inline void cj_builder_loop_end(cj_ctx *ctx, cj_builder_block block)
-{
-  if (!ctx)
-    return;
+static inline void cj_builder_loop_end(cj_ctx *ctx, cj_builder_block block) {
+  if (!ctx) return;
   branch_unconditional(ctx, block.entry);
   cj_mark_label(ctx, block.exit);
 }
 
-cj_builder_if_block cj_builder_if(cj_ctx *ctx, cj_operand lhs, cj_operand rhs, cj_condition cond)
-{
+cj_builder_if_block cj_builder_if(cj_ctx *ctx, cj_operand lhs, cj_operand rhs, cj_condition cond) {
   cj_builder_if_block block = {
       .else_label = cj_create_label(ctx),
       .end_label = cj_create_label(ctx),
@@ -359,21 +342,16 @@ cj_builder_if_block cj_builder_if(cj_ctx *ctx, cj_operand lhs, cj_operand rhs, c
   return block;
 }
 
-void cj_builder_else(cj_ctx *ctx, cj_builder_if_block *block)
-{
-  if (!ctx || !block)
-    return;
+void cj_builder_else(cj_ctx *ctx, cj_builder_if_block *block) {
+  if (!ctx || !block) return;
   branch_unconditional(ctx, block->end_label);
   cj_mark_label(ctx, block->else_label);
   block->has_else = 1;
 }
 
-void cj_builder_endif(cj_ctx *ctx, cj_builder_if_block *block)
-{
-  if (!ctx || !block)
-    return;
-  if (!block->has_else)
-  {
+void cj_builder_endif(cj_ctx *ctx, cj_builder_if_block *block) {
+  if (!ctx || !block) return;
+  if (!block->has_else) {
     cj_mark_label(ctx, block->else_label);
   }
   cj_mark_label(ctx, block->end_label);
@@ -381,8 +359,7 @@ void cj_builder_endif(cj_ctx *ctx, cj_builder_if_block *block)
 
 static inline cj_builder_for_loop cj_builder_for_begin(cj_ctx *ctx, cj_operand counter,
                                                        cj_operand start, cj_operand limit,
-                                                       cj_operand step, cj_condition exit_cond)
-{
+                                                       cj_operand step, cj_condition exit_cond) {
   cj_builder_for_loop loop = {
       .counter = counter,
       .limit = limit,
@@ -390,60 +367,47 @@ static inline cj_builder_for_loop cj_builder_for_begin(cj_ctx *ctx, cj_operand c
       .exit_cond = exit_cond,
   };
 
-  if (counter.type == CJ_REGISTER)
-  {
-    cj_mov(ctx, counter, start);
-  }
+  if (counter.type == CJ_REGISTER) cj_mov(ctx, counter, start);
 
   loop.block = cj_builder_loop_begin(ctx);
   cj_builder_loop_condition(ctx, loop.block, counter, limit, exit_cond);
   return loop;
 }
 
-static inline void cj_builder_for_continue(cj_ctx *ctx, cj_builder_for_loop *loop)
-{
-  if (!ctx || !loop)
-    return;
+static inline void cj_builder_for_continue(cj_ctx *ctx, cj_builder_for_loop *loop) {
+  if (!ctx || !loop) return;
   cj_add(ctx, loop->counter, loop->step);
   cj_builder_loop_continue(ctx, loop->block);
 }
 
-static inline void cj_builder_for_break(cj_ctx *ctx, cj_builder_for_loop *loop)
-{
-  if (!ctx || !loop)
-    return;
+static inline void cj_builder_for_break(cj_ctx *ctx, cj_builder_for_loop *loop) {
+  if (!ctx || !loop) return;
   cj_builder_loop_break(ctx, loop->block);
 }
 
-static inline void cj_builder_for_end(cj_ctx *ctx, cj_builder_for_loop *loop)
-{
-  if (!ctx || !loop)
-    return;
+static inline void cj_builder_for_end(cj_ctx *ctx, cj_builder_for_loop *loop) {
+  if (!ctx || !loop) return;
   cj_add(ctx, loop->counter, loop->step);
   cj_builder_loop_end(ctx, loop->block);
 }
 
-static inline cj_operand cj_builder_assign(cj_ctx *ctx, cj_operand dst, cj_operand src)
-{
+static inline cj_operand cj_builder_assign(cj_ctx *ctx, cj_operand dst, cj_operand src) {
 #if defined(__aarch64__) || defined(_M_ARM64)
-  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT)
-  {
+  if (dst.type == CJ_REGISTER && src.type == CJ_CONSTANT) {
     const char *reg = dst.reg;
     int is64 = (reg && reg[0] == 'x');
     uint64_t mask = is64 ? UINT64_MAX : 0xFFFFFFFFu;
     uint64_t value = src.constant & mask;
-    if (value == 0)
-    {
+    if (value == 0) {
       cj_mov(ctx, dst, cj_builder_zero_operand());
       return dst;
     }
     cj_operand chunk = cj_make_constant((value & 0xFFFFu));
     cj_movz(ctx, dst, chunk);
-    for (int shift = 16; shift < (is64 ? 64 : 32); shift += 16)
-    {
+    for (int shift = 16; shift < (is64 ? 64 : 32); shift += 16) {
       uint16_t part = (uint16_t)((value >> shift) & 0xFFFFu);
-      if (!part)
-        continue;
+      if (!part) continue;
+
       uint64_t encoded = (uint64_t)part | ((uint64_t)(shift / 16) << 16);
       cj_operand next = cj_make_constant(encoded);
       cj_movk(ctx, dst, next);
@@ -451,33 +415,28 @@ static inline cj_operand cj_builder_assign(cj_ctx *ctx, cj_operand dst, cj_opera
     return dst;
   }
 #endif
-  if (dst.type == CJ_REGISTER)
-  {
+  if (dst.type == CJ_REGISTER) {
     cj_mov(ctx, dst, src);
     return dst;
   }
-  if (dst.type == CJ_MEMORY)
-  {
+  if (dst.type == CJ_MEMORY) {
     cj_mov(ctx, dst, src);
     return dst;
   }
   return dst;
 }
 
-static inline cj_operand cj_builder_add_assign(cj_ctx *ctx, cj_operand dst, cj_operand value)
-{
+static inline cj_operand cj_builder_add_assign(cj_ctx *ctx, cj_operand dst, cj_operand value) {
   cj_add(ctx, dst, value);
   return dst;
 }
 
-static inline cj_operand cj_builder_sub_assign(cj_ctx *ctx, cj_operand dst, cj_operand value)
-{
+static inline cj_operand cj_builder_sub_assign(cj_ctx *ctx, cj_operand dst, cj_operand value) {
   cj_sub(ctx, dst, value);
   return dst;
 }
 
-static inline cj_operand get_return_operand(void)
-{
+static inline cj_operand get_return_operand(void) {
 #if defined(__x86_64__) || defined(_M_X64)
   return cj_make_register("eax");
 #elif defined(__aarch64__) || defined(_M_ARM64)
@@ -485,13 +444,11 @@ static inline cj_operand get_return_operand(void)
 #endif
 }
 
-static inline cj_operand cj_builder_return_reg(void)
-{
+static inline cj_operand cj_builder_return_reg(void) {
   return get_return_operand();
 }
 
-static inline cj_operand cj_builder_arg_int(cj_ctx *ctx, unsigned index)
-{
+static inline cj_operand cj_builder_arg_int(cj_ctx *ctx, unsigned index) {
   (void)ctx;
 #if defined(__x86_64__) || defined(_M_X64)
   static const char *regs[] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
@@ -509,28 +466,19 @@ static inline cj_operand cj_builder_arg_int(cj_ctx *ctx, unsigned index)
 }
 
 static inline void cj_builder_return_value(cj_ctx *ctx, const cj_builder_frame *frame,
-                                           cj_operand value)
-{
-  if (!ctx)
-    return;
+                                           cj_operand value) {
+  if (!ctx) return;
   cj_operand ret = get_return_operand();
   int needs_move = 1;
-  if (value.type == CJ_REGISTER && value.reg && ret.reg)
-  {
-    if (strcmp(value.reg, ret.reg) == 0)
-    {
-      needs_move = 0;
-    }
+  if (value.type == CJ_REGISTER && value.reg && ret.reg) {
+    if (strcmp(value.reg, ret.reg) == 0) needs_move = 0;
   }
-  if (needs_move)
-  {
-    cj_mov(ctx, ret, value);
-  }
+  if (needs_move) cj_mov(ctx, ret, value);
+
   cj_builder_return(ctx, frame);
 }
 
-static inline cj_operand cj_builder_zero_operand(void)
-{
+static inline cj_operand cj_builder_zero_operand(void) {
 #if defined(__x86_64__) || defined(_M_X64)
   return cj_make_constant(0);
 #elif defined(__aarch64__) || defined(_M_ARM64)
@@ -538,13 +486,10 @@ static inline cj_operand cj_builder_zero_operand(void)
 #endif
 }
 
-static inline void cj_builder_clear(cj_ctx *ctx, cj_operand dst)
-{
-  if (!ctx)
-    return;
+static inline void cj_builder_clear(cj_ctx *ctx, cj_operand dst) {
+  if (!ctx) return;
 #if defined(__x86_64__) || defined(_M_X64)
-  if (dst.type == CJ_REGISTER)
-  {
+  if (dst.type == CJ_REGISTER) {
     cj_xor(ctx, dst, dst);
     return;
   }
@@ -552,8 +497,7 @@ static inline void cj_builder_clear(cj_ctx *ctx, cj_operand dst)
   cj_mov(ctx, dst, cj_builder_zero_operand());
 }
 
-static inline cj_operand cj_builder_scratch_reg(unsigned index)
-{
+static inline cj_operand cj_builder_scratch_reg(unsigned index) {
 #if defined(__x86_64__) || defined(_M_X64)
   static const char *regs[] = {"r8d", "r9d", "r10d", "r11d", "ecx", "edx"};
   const size_t count = sizeof(regs) / sizeof(regs[0]);
@@ -566,5 +510,122 @@ static inline cj_operand cj_builder_scratch_reg(unsigned index)
   assert(index < count);
   (void)count;
   return cj_make_register(regs[index]);
+#endif
+}
+
+static inline unsigned cj_builder_scratch_capacity(void) {
+#if defined(__x86_64__) || defined(_M_X64)
+  return 6;
+#elif defined(__aarch64__) || defined(_M_ARM64)
+  return 6;
+#endif
+}
+
+static inline unsigned cj_builder_arg_int_capacity(void) {
+#if defined(__x86_64__) || defined(_M_X64)
+  return 6;
+#elif defined(__aarch64__) || defined(_M_ARM64)
+  return 8;
+#endif
+}
+
+static inline void cj_builder_scratch_init(cj_builder_scratch *scratch) {
+  if (!scratch) return;
+  scratch->depth = 0;
+}
+
+static inline cj_operand cj_builder_scratch_acquire(cj_builder_scratch *scratch) {
+  assert(scratch);
+  assert(scratch->depth < cj_builder_scratch_capacity());
+  unsigned index = scratch->depth++;
+  return cj_builder_scratch_reg(index);
+}
+
+static inline void cj_builder_scratch_release(cj_builder_scratch *scratch) {
+  assert(scratch);
+  assert(scratch->depth > 0);
+  scratch->depth--;
+}
+
+static inline void cj_builder_call_label(cj_ctx *ctx, cj_label target) {
+#if defined(__x86_64__) || defined(_M_X64)
+  cj_call(ctx, target);
+#elif defined(__aarch64__) || defined(_M_ARM64)
+  cj_bl(ctx, target);
+#endif
+}
+
+static inline cj_operand cj_builder_call_unary(cj_ctx *ctx, cj_builder_scratch *scratch,
+                                               cj_label target, cj_operand arg0) {
+  const cj_operand args[] = {arg0};
+  return cj_builder_call(ctx, scratch, target, args, 1);
+}
+
+static inline cj_operand cj_builder_call(cj_ctx *ctx, cj_builder_scratch *scratch, cj_label target,
+                                         const cj_operand *args, size_t arg_count) {
+  if (!ctx) return cj_builder_return_reg();
+
+  unsigned capacity = cj_builder_arg_int_capacity();
+  assert(arg_count <= capacity);
+
+  for (size_t i = 0; i < arg_count; ++i) {
+    cj_operand reg = cj_builder_arg_int(ctx, (unsigned)i);
+    cj_builder_assign(ctx, reg, args[i]);
+  }
+
+  if (scratch) cj_builder_scratch_release(scratch);
+
+  cj_builder_call_label(ctx, target);
+
+  if (scratch) {
+    cj_operand dst = cj_builder_scratch_acquire(scratch);
+    cj_builder_assign(ctx, dst, cj_builder_return_reg());
+    return dst;
+  }
+
+  return cj_builder_return_reg();
+}
+
+static inline void cj_builder_fn_prologue_ex(cj_ctx *ctx, size_t requested_stack_bytes,
+                                             cj_builder_frame *frame, int save_lr) {
+  if (!ctx) return;
+  assert(!save_lr || frame);
+
+  size_t aligned = align_stack_size(requested_stack_bytes);
+  size_t lr_offset = aligned;
+  if (frame) {
+    frame->stack_size = aligned;
+    frame->save_lr = save_lr ? 1 : 0;
+    frame->lr_offset = save_lr ? lr_offset : 0;
+  }
+
+#if defined(__x86_64__) || defined(_M_X64)
+  (void)save_lr;
+  cj_operand rbp = cj_make_register("rbp");
+  cj_operand rsp = cj_make_register("rsp");
+
+  cj_push(ctx, rbp);
+  cj_mov(ctx, rbp, rsp);
+
+  if (aligned) {
+    cj_operand amount = cj_make_constant((uint64_t)aligned);
+    cj_sub(ctx, rsp, amount);
+  }
+#elif defined(__aarch64__) || defined(_M_ARM64)
+  size_t total = aligned + (save_lr ? 16 : 0);
+  cj_operand sp = cj_make_register("sp");
+
+  if (total) {
+    cj_operand amount = cj_make_constant((uint64_t)total);
+    cj_sub(ctx, sp, amount);
+  }
+
+  if (save_lr) {
+    cj_operand lr = cj_make_register("x30");
+    cj_operand slot = cj_make_memory("sp", NULL, 1, (int32_t)lr_offset);
+    cj_str(ctx, lr, slot);
+  }
+#else
+  (void)save_lr;
 #endif
 }

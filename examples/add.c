@@ -4,8 +4,7 @@
 
 typedef int (*add_fn)(int);
 
-int main(void)
-{
+int main(void) {
   cj_ctx *cj = create_cj_ctx();
 
 #ifdef __aarch64__

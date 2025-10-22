@@ -2,7 +2,8 @@ BasedOnStyle: LLVM
 IndentWidth: 2
 ColumnLimit: 100
 UseTab: Never
-AllowShortIfStatementsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Empty
-BreakBeforeBraces: Allman
+BreakBeforeBraces: Attach
 SpaceBeforeParens: ControlStatements

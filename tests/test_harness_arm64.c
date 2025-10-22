@@ -18,13 +18,11 @@
 #include "op.h"
 #include "register.h"
 
-static inline uint32_t mov_literal_chunk(uint16_t value, uint32_t shift)
-{
+static inline uint32_t mov_literal_chunk(uint16_t value, uint32_t shift) {
   return ((shift / 16u) << 16) | (uint32_t)value;
 }
 
-static void test_mov_returns_second_argument(void)
-{
+static void test_mov_returns_second_argument(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -44,8 +42,7 @@ static void test_mov_returns_second_argument(void)
   assert(res == 99);
 }
 
-static void test_add_immediate(void)
-{
+static void test_add_immediate(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -65,8 +62,7 @@ static void test_add_immediate(void)
   assert(res == 42);
 }
 
-static void test_add_register(void)
-{
+static void test_add_register(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -86,8 +82,7 @@ static void test_add_register(void)
   assert(res == 42);
 }
 
-static void test_add_shifted_register(void)
-{
+static void test_add_shifted_register(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -107,8 +102,7 @@ static void test_add_shifted_register(void)
   assert(res == 19);
 }
 
-static void test_add_immediate_shifted(void)
-{
+static void test_add_immediate_shifted(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -128,8 +122,7 @@ static void test_add_immediate_shifted(void)
   assert(res == 10 + (1L << 12));
 }
 
-static void test_add_extended_register(void)
-{
+static void test_add_extended_register(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -149,8 +142,7 @@ static void test_add_extended_register(void)
   assert(res == 5 + ((long)3 << 2));
 }
 
-static void test_add_signed_extend(void)
-{
+static void test_add_signed_extend(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -171,8 +163,7 @@ static void test_add_signed_extend(void)
   assert(res == expected);
 }
 
-static void test_and_shifted_register(void)
-{
+static void test_and_shifted_register(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -194,8 +185,7 @@ static void test_and_shifted_register(void)
   assert(res == (lhs & (rhs >> 1))); // LSR
 }
 
-static void test_str_pre_index(void)
-{
+static void test_str_pre_index(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -219,8 +209,7 @@ static void test_str_pre_index(void)
   assert(buffer[1] == 0);
 }
 
-static void test_ldr_post_index(void)
-{
+static void test_ldr_post_index(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -246,8 +235,7 @@ static void test_ldr_post_index(void)
   assert(updated == data + 1);
 }
 
-static void test_movz_literal(void)
-{
+static void test_movz_literal(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -267,8 +255,7 @@ static void test_movz_literal(void)
   assert(res == 0x9ABC);
 }
 
-static void test_movk_multi_chunk(void)
-{
+static void test_movk_multi_chunk(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -292,8 +279,7 @@ static void test_movk_multi_chunk(void)
   assert(res == expected);
 }
 
-static void test_store_load_roundtrip(void)
-{
+static void test_store_load_roundtrip(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -318,8 +304,7 @@ static void test_store_load_roundtrip(void)
   assert(res == 4242);
 }
 
-static void test_branch_max(void)
-{
+static void test_branch_max(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -349,8 +334,7 @@ static void test_branch_max(void)
   assert(res2 == 10);
 }
 
-static void test_cmp_shifted_register_branch(void)
-{
+static void test_cmp_shifted_register_branch(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -384,8 +368,7 @@ static void test_cmp_shifted_register_branch(void)
   assert(res_lt == 0);
 }
 
-static void test_cmp_immediate_branch(void)
-{
+static void test_cmp_immediate_branch(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -421,8 +404,7 @@ static void test_cmp_immediate_branch(void)
   assert(above == 1);
 }
 
-static void test_scalar_fp_add(void)
-{
+static void test_scalar_fp_add(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand s0 = cj_make_register("s0");
@@ -442,8 +424,7 @@ static void test_scalar_fp_add(void)
   assert(res > 3.74f && res < 3.76f);
 }
 
-static void test_ld1_st1_vec_list(void)
-{
+static void test_ld1_st1_vec_list(void) {
   cj_ctx *cj = create_cj_ctx();
 
   const char *regs[] = {"v0.4s", "v1.4s"};
@@ -465,8 +446,7 @@ static void test_ld1_st1_vec_list(void)
   destroy_cj_fn(cj, (cj_fn)fn);
   destroy_cj_ctx(cj);
 
-  for (int i = 0; i < 8; ++i)
-  {
+  for (int i = 0; i < 8; ++i) {
     assert(dst[i] == src[i]);
   }
 }
@@ -496,8 +476,7 @@ static void test_vector_abs_in_place(void) {
 }
 */
 
-static void test_sub_register(void)
-{
+static void test_sub_register(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -517,8 +496,7 @@ static void test_sub_register(void)
   assert(res == 58);
 }
 
-static void test_sub_immediate(void)
-{
+static void test_sub_immediate(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -538,8 +516,7 @@ static void test_sub_immediate(void)
   assert(res == 42);
 }
 
-static void test_or_register(void)
-{
+static void test_or_register(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -559,8 +536,7 @@ static void test_or_register(void)
   assert(res == 0xFFFF);
 }
 
-static void test_xor_register(void)
-{
+static void test_xor_register(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -580,8 +556,7 @@ static void test_xor_register(void)
   assert(res == 0x00FF);
 }
 
-static void test_mul_register(void)
-{
+static void test_mul_register(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -601,8 +576,7 @@ static void test_mul_register(void)
   assert(res == 42);
 }
 
-static void test_udiv_register(void)
-{
+static void test_udiv_register(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -622,8 +596,7 @@ static void test_udiv_register(void)
   assert(res == 42);
 }
 
-static void test_sdiv_register(void)
-{
+static void test_sdiv_register(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -643,8 +616,7 @@ static void test_sdiv_register(void)
   assert(res == -42);
 }
 
-static void test_lsl_register(void)
-{
+static void test_lsl_register(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -664,8 +636,7 @@ static void test_lsl_register(void)
   assert(res == 42);
 }
 
-static void test_lsr_register(void)
-{
+static void test_lsr_register(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -685,8 +656,7 @@ static void test_lsr_register(void)
   assert(res == 42);
 }
 
-static void test_asr_register(void)
-{
+static void test_asr_register(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -706,8 +676,7 @@ static void test_asr_register(void)
   assert(res == -42);
 }
 
-static void test_mvn_register(void)
-{
+static void test_mvn_register(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -728,8 +697,7 @@ static void test_mvn_register(void)
   assert(res == ~0x00FFull);
 }
 
-static void test_ldxr_simple(void)
-{
+static void test_ldxr_simple(void) {
   cj_ctx *cj = create_cj_ctx();
 
   // x0 = address, load value from [x0] into x0 using LDXR
@@ -749,8 +717,7 @@ static void test_ldxr_simple(void)
   assert(result == 0x1234567890ABCDEF);
 }
 
-static void test_stxr_simple(void)
-{
+static void test_stxr_simple(void) {
   cj_ctx *cj = create_cj_ctx();
 
   // x0 = address, x1 = value to store
@@ -781,8 +748,7 @@ static void test_stxr_simple(void)
   assert(value == 0xDEADBEEF);
 }
 
-static void test_ldar_simple(void)
-{
+static void test_ldar_simple(void) {
   cj_ctx *cj = create_cj_ctx();
 
   // x0 = address, load-acquire from [x0] into x0
@@ -802,8 +768,7 @@ static void test_ldar_simple(void)
   assert(result == 0xFEDCBA9876543210);
 }
 
-static void test_simd_add(void)
-{
+static void test_simd_add(void) {
   cj_ctx *cj = create_cj_ctx();
 
   // Load input vectors from memory
@@ -838,11 +803,9 @@ static void test_simd_add(void)
   fn(vec1, vec2);
 
   // Check result (vec1 should be sum of original vec1 and vec2)
-  for (int i = 0; i < 16; i++)
-  {
+  for (int i = 0; i < 16; i++) {
     uint8_t expected = (i + 1) + (16 - i);
-    if (vec1[i] != expected)
-    {
+    if (vec1[i] != expected) {
       printf("SIMD test failed at index %d: expected %d, got %d\n", i, expected, vec1[i]);
     }
     assert(vec1[i] == expected);
@@ -852,8 +815,7 @@ static void test_simd_add(void)
   destroy_cj_ctx(cj);
 }
 
-static void test_simd_abs(void)
-{
+static void test_simd_abs(void) {
   cj_ctx *cj = create_cj_ctx();
 
   // Test SIMD ABS (absolute value) on signed bytes
@@ -883,10 +845,8 @@ static void test_simd_abs(void)
   fn(vec);
 
   // Check result (all values should be positive)
-  for (int i = 0; i < 16; i++)
-  {
-    if (vec[i] != expected[i])
-    {
+  for (int i = 0; i < 16; i++) {
+    if (vec[i] != expected[i]) {
       printf("SIMD ABS test failed at index %d: expected %d, got %d\n", i, expected[i], vec[i]);
     }
     assert(vec[i] == expected[i]);
@@ -896,8 +856,7 @@ static void test_simd_abs(void)
   destroy_cj_ctx(cj);
 }
 
-static void test_aes_encrypt(void)
-{
+static void test_aes_encrypt(void) {
   cj_ctx *cj = create_cj_ctx();
 
   // Test AES single round encryption (AESE)
@@ -937,10 +896,8 @@ static void test_aes_encrypt(void)
   // (SubBytes + ShiftRows applied, not just zero)
   // Check that state changed (not all zeros anymore)
   int changed = 0;
-  for (int i = 0; i < 16; i++)
-  {
-    if (state[i] != 0)
-    {
+  for (int i = 0; i < 16; i++) {
+    if (state[i] != 0) {
       changed = 1;
       break;
     }
@@ -953,8 +910,7 @@ static void test_aes_encrypt(void)
   destroy_cj_ctx(cj);
 }
 
-static void test_xtn_narrow(void)
-{
+static void test_xtn_narrow(void) {
   cj_ctx *cj = create_cj_ctx();
 
   // Test XTN (extend narrow) - narrows 16-bit to 8-bit elements
@@ -999,10 +955,8 @@ static void test_xtn_narrow(void)
   // XTN narrows to lower byte of each halfword
   // result1 lower 8 bytes should be: 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07
   uint8_t expected1[8] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
-  for (int i = 0; i < 8; i++)
-  {
-    if (result1[i] != expected1[i])
-    {
+  for (int i = 0; i < 8; i++) {
+    if (result1[i] != expected1[i]) {
       printf("XTN test failed at index %d: expected 0x%02x, got 0x%02x\n", i, expected1[i],
              result1[i]);
     }
@@ -1010,10 +964,8 @@ static void test_xtn_narrow(void)
   }
 
   // XTN2 should have same values in both halves (lower from XTN, upper from XTN2)
-  for (int i = 0; i < 8; i++)
-  {
-    if (result2[i] != expected1[i] || result2[i + 8] != expected1[i])
-    {
+  for (int i = 0; i < 8; i++) {
+    if (result2[i] != expected1[i] || result2[i + 8] != expected1[i]) {
       printf("XTN2 test failed at index %d: expected 0x%02x in both halves, got lower=0x%02x "
              "upper=0x%02x\n",
              i, expected1[i], result2[i], result2[i + 8]);
@@ -1026,8 +978,7 @@ static void test_xtn_narrow(void)
   destroy_cj_ctx(cj);
 }
 
-static void test_sve_encoding(void)
-{
+static void test_sve_encoding(void) {
   cj_ctx *cj = create_cj_ctx();
 
   // Test SVE FTSMUL instruction encoding
@@ -1051,8 +1002,7 @@ static void test_sve_encoding(void)
   uint32_t generated = *(uint32_t *)cj->mem;
   uint32_t expected = 0x65C20C20;
 
-  if (generated != expected)
-  {
+  if (generated != expected) {
     printf("SVE encoding test failed: expected 0x%08X, got 0x%08X\n", expected, generated);
   }
   assert(generated == expected);
@@ -1063,16 +1013,13 @@ static void test_sve_encoding(void)
 static jmp_buf sve_test_env;
 static int sve_available = -1; // -1 = unknown, 0 = not available, 1 = available
 
-static void sve_sigill_handler(int sig)
-{
+static void sve_sigill_handler(int sig) {
   sve_available = 0;
   longjmp(sve_test_env, 1);
 }
 
-static int check_sve_available(void)
-{
-  if (sve_available != -1)
-  {
+static int check_sve_available(void) {
+  if (sve_available != -1) {
     return sve_available;
   }
 
@@ -1083,8 +1030,7 @@ static int check_sve_available(void)
   sa.sa_flags = 0;
   sigaction(SIGILL, &sa, &old_sa);
 
-  if (setjmp(sve_test_env) == 0)
-  {
+  if (setjmp(sve_test_env) == 0) {
     // Try to execute a simple SVE instruction (RDVL - read vector length)
     // This will raise SIGILL if SVE is not available
     // Use .inst to encode RDVL x0, #1 directly (opcode: 0x04bf5000)
@@ -1098,10 +1044,8 @@ static int check_sve_available(void)
   return sve_available;
 }
 
-static void test_sve_execution(void)
-{
-  if (!check_sve_available())
-  {
+static void test_sve_execution(void) {
+  if (!check_sve_available()) {
     printf("SVE not available on this system, skipping execution test\n");
     return;
   }
@@ -1134,8 +1078,7 @@ static void test_sve_execution(void)
   destroy_cj_ctx(cj);
 }
 
-static void test_conditional_branch(void)
-{
+static void test_conditional_branch(void) {
   cj_ctx *cj = create_cj_ctx();
 
   // Test B.EQ (branch if equal)
@@ -1174,8 +1117,7 @@ static void test_conditional_branch(void)
   assert(res_ne2 == 0);
 }
 
-static void test_bfmlal_encoding(void)
-{
+static void test_bfmlal_encoding(void) {
   cj_ctx *cj = create_cj_ctx();
 
   // Test BFMLALB encoding (BFloat16 multiply-add bottom)
@@ -1196,8 +1138,7 @@ static void test_bfmlal_encoding(void)
 // Comprehensive SIMD/NEON Tests
 // ============================================================================
 
-static void test_simd_sub(void)
-{
+static void test_simd_sub(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand q0 = cj_make_register("q0");
@@ -1234,8 +1175,7 @@ static void test_simd_sub(void)
   destroy_cj_ctx(cj);
 }
 
-static void test_simd_mul(void)
-{
+static void test_simd_mul(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand q0 = cj_make_register("q0");
@@ -1274,8 +1214,7 @@ static void test_simd_mul(void)
   destroy_cj_ctx(cj);
 }
 
-static void test_simd_max_min(void)
-{
+static void test_simd_max_min(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand q0 = cj_make_register("q0");
@@ -1310,8 +1249,7 @@ static void test_simd_max_min(void)
 
   fn(vec1, vec2, max_result, min_result);
 
-  for (int i = 0; i < 16; i++)
-  {
+  for (int i = 0; i < 16; i++) {
     uint8_t expected_max = vec1[i] > vec2[i] ? vec1[i] : vec2[i];
     uint8_t expected_min = vec1[i] < vec2[i] ? vec1[i] : vec2[i];
     assert(max_result[i] == expected_max);
@@ -1322,8 +1260,7 @@ static void test_simd_max_min(void)
   destroy_cj_ctx(cj);
 }
 
-static void test_simd_neg(void)
-{
+static void test_simd_neg(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand q0 = cj_make_register("q0");
@@ -1356,8 +1293,7 @@ static void test_simd_neg(void)
 // Floating Point Tests
 // ============================================================================
 
-static void test_fp_add(void)
-{
+static void test_fp_add(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand d0 = cj_make_register("d0");
@@ -1379,8 +1315,7 @@ static void test_fp_add(void)
   destroy_cj_ctx(cj);
 }
 
-static void test_fp_sub_mul_div(void)
-{
+static void test_fp_sub_mul_div(void) {
   cj_ctx *cj = create_cj_ctx();
 
   // Test FSUB
@@ -1419,8 +1354,7 @@ static void test_fp_sub_mul_div(void)
   destroy_cj_ctx(cj);
 }
 
-static void test_fp_conversion(void)
-{
+static void test_fp_conversion(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -1446,8 +1380,7 @@ static void test_fp_conversion(void)
   destroy_cj_ctx(cj);
 }
 
-static void test_fp_compare(void)
-{
+static void test_fp_compare(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand d0 = cj_make_register("d0");
@@ -1489,11 +1422,9 @@ static void test_fp_compare(void)
 // Comprehensive Conditional Branch Tests
 // ============================================================================
 
-static void test_all_conditions(void)
-{
+static void test_all_conditions(void) {
   // Test all 16 ARM64 condition codes
-  typedef struct
-  {
+  typedef struct {
     const char *name;
     void (*branch_fn)(cj_ctx *, cj_label);
     long input1;
@@ -1521,8 +1452,7 @@ static void test_all_conditions(void)
       {"AL", cj_bal, 0, 0, 1},         // Always
   };
 
-  for (int i = 0; i < sizeof(tests) / sizeof(tests[0]); i++)
-  {
+  for (int i = 0; i < sizeof(tests) / sizeof(tests[0]); i++) {
     cj_ctx *cj = create_cj_ctx();
 
     cj_operand x0 = cj_make_register("x0");
@@ -1549,8 +1479,7 @@ static void test_all_conditions(void)
     fn_t fn = (fn_t)create_cj_fn(cj);
 
     long result = fn(tests[i].input1, tests[i].input2);
-    if (result != tests[i].should_branch)
-    {
+    if (result != tests[i].should_branch) {
       printf("Condition %s failed: expected %d, got %ld (inputs: %ld, %ld)\n", tests[i].name,
              tests[i].should_branch, result, tests[i].input1, tests[i].input2);
     }
@@ -1565,8 +1494,7 @@ static void test_all_conditions(void)
 // Bit Manipulation Tests
 // ============================================================================
 
-static void test_bit_operations(void)
-{
+static void test_bit_operations(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -1587,8 +1515,7 @@ static void test_bit_operations(void)
   destroy_cj_ctx(cj);
 }
 
-static void test_clz_rbit(void)
-{
+static void test_clz_rbit(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -1621,8 +1548,7 @@ static void test_clz_rbit(void)
   destroy_cj_ctx(cj);
 }
 
-static void test_rev_bytes(void)
-{
+static void test_rev_bytes(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0");
@@ -1645,8 +1571,7 @@ static void test_rev_bytes(void)
 // More Crypto Tests
 // ============================================================================
 
-static void test_sha256(void)
-{
+static void test_sha256(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand q0 = cj_make_register("q0");
@@ -1676,10 +1601,8 @@ static void test_sha256(void)
 
   // Just verify the state changed (SHA256 is complex to verify fully)
   int changed = 0;
-  for (int i = 0; i < 4; i++)
-  {
-    if (state[i] != original[i])
-    {
+  for (int i = 0; i < 4; i++) {
+    if (state[i] != original[i]) {
       changed = 1;
       break;
     }
@@ -1694,8 +1617,7 @@ static void test_sha256(void)
 // More Atomic/CAS Tests
 // ============================================================================
 
-static void test_cas_basic(void)
-{
+static void test_cas_basic(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand x0 = cj_make_register("x0"); // compare value
@@ -1723,8 +1645,7 @@ static void test_cas_basic(void)
   destroy_cj_ctx(cj);
 }
 
-int main(void)
-{
+int main(void) {
   test_mov_returns_second_argument();
   puts("mov ok");
   test_add_immediate();

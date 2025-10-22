@@ -97,6 +97,12 @@ jobs:
           ${{ matrix.cc }} -std=c11 -O2 -Isrc tests/test_harness_builder.c src/ctx.c -o jit_tests_builder
           ./jit_tests_builder
 
+      - name: Build and run minilang example
+        timeout-minutes: 1
+        run: |
+          ${{ matrix.cc }} -std=c11 -O2 -Isrc examples/minilang.c src/ctx.c -o minilang_example
+          ./minilang_example "(def main (x) (add 10 (call dec x))) (def dec (y) (sub y 1))" 10
+
       - name: Build and run SIMD example
         run: |
           ${{ matrix.cc }} -std=c11 -O2 -Isrc examples/simd.c src/ctx.c -o simd_example

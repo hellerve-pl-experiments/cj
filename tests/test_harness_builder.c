@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #include "builder.h"
@@ -6,8 +7,7 @@
 typedef int (*fn1_t)(int);
 typedef int (*fn2_t)(int, int);
 
-static void test_assign_and_add(void)
-{
+static void test_assign_and_add(void) {
   cj_ctx *cj = create_cj_ctx();
   cj_builder_frame frame;
   cj_builder_fn_prologue(cj, 0, &frame);
@@ -29,8 +29,84 @@ static void test_assign_and_add(void)
   destroy_cj_ctx(cj);
 }
 
-static void test_for_loop_sum(void)
-{
+static void test_scratch_helpers(void) {
+  cj_ctx *cj = create_cj_ctx();
+  cj_builder_frame frame;
+  cj_builder_fn_prologue(cj, 0, &frame);
+
+  cj_builder_scratch scratch;
+  cj_builder_scratch_init(&scratch);
+
+  cj_operand acc = cj_builder_scratch_acquire(&scratch);
+  cj_operand tmp = cj_builder_scratch_acquire(&scratch);
+
+  cj_builder_assign(cj, acc, cj_builder_arg_int(cj, 0));
+  cj_builder_assign(cj, tmp, cj_make_constant(7));
+  cj_builder_add_assign(cj, acc, tmp);
+
+  cj_builder_scratch_release(&scratch); // release tmp
+
+  cj_operand adjust = cj_builder_scratch_acquire(&scratch);
+  cj_builder_assign(cj, adjust, cj_make_constant(3));
+  cj_builder_sub_assign(cj, acc, adjust);
+
+  cj_builder_scratch_release(&scratch); // release adjust
+
+  cj_builder_return_value(cj, &frame, acc);
+  cj_builder_scratch_release(&scratch); // release acc
+
+  fn1_t fn = (fn1_t)create_cj_fn(cj);
+  assert(fn);
+  assert(fn(0) == 4);
+  assert(fn(5) == 9);
+
+  destroy_cj_fn(cj, (cj_fn)fn);
+  destroy_cj_ctx(cj);
+}
+
+static void test_call_helper(void) {
+  cj_ctx *cj = create_cj_ctx();
+  cj_label entry = cj_create_label(cj);
+  cj_label callee = cj_create_label(cj);
+
+  // Main function
+  cj_mark_label(cj, entry);
+  cj_builder_frame main_frame;
+  cj_builder_fn_prologue_with_link_save(cj, 0, &main_frame);
+  cj_builder_scratch scratch;
+  cj_builder_scratch_init(&scratch);
+
+  cj_operand arg = cj_builder_scratch_acquire(&scratch);
+  cj_builder_assign(cj, arg, cj_builder_arg_int(cj, 0));
+  cj_builder_add_assign(cj, arg, cj_make_constant(2));
+
+  cj_operand call_result = cj_builder_call_unary(cj, &scratch, callee, arg);
+  cj_builder_return_value(cj, &main_frame, call_result);
+  cj_builder_scratch_release(&scratch);
+
+  // Callee function: returns x + 1
+  cj_mark_label(cj, callee);
+  cj_builder_frame callee_frame;
+  cj_builder_fn_prologue(cj, 0, &callee_frame);
+  cj_operand callee_arg = cj_builder_arg_int(cj, 0);
+  cj_operand tmp = cj_builder_scratch_reg(0);
+  cj_builder_assign(cj, tmp, callee_arg);
+  cj_builder_add_assign(cj, tmp, cj_make_constant(1));
+  cj_builder_return_value(cj, &callee_frame, tmp);
+
+  cj_fn module = create_cj_fn(cj);
+  assert(module);
+
+  fn1_t fn = (fn1_t)cj_resolve_label(cj, module, entry);
+  assert(fn);
+  assert(fn(10) == 13);
+  assert(fn(-4) == -1);
+
+  destroy_cj_fn(cj, module);
+  destroy_cj_ctx(cj);
+}
+
+static void test_for_loop_sum(void) {
   cj_ctx *cj = create_cj_ctx();
   cj_builder_frame frame;
   cj_builder_fn_prologue(cj, 0, &frame);
@@ -60,8 +136,7 @@ static void test_for_loop_sum(void)
   destroy_cj_ctx(cj);
 }
 
-static void test_if_else(void)
-{
+static void test_if_else(void) {
   cj_ctx *cj = create_cj_ctx();
   cj_builder_frame frame;
   cj_builder_fn_prologue(cj, 0, &frame);
@@ -92,9 +167,10 @@ static void test_if_else(void)
   destroy_cj_ctx(cj);
 }
 
-int main(void)
-{
+int main(void) {
   test_assign_and_add();
+  test_scratch_helpers();
+  test_call_helper();
   test_for_loop_sum();
   test_if_else();
   puts("builder harness OK");

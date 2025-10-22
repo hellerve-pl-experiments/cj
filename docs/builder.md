@@ -8,6 +8,8 @@ around abi registers, stack setup, and label plumbing, and it looks less scary.
 
 - `cj_builder_fn_prologue(cj, stack_bytes, &frame)`: create a frame and reserve
   optional stack space (aligned for both arches).
+- `cj_builder_fn_prologue_with_link_save(cj, stack_bytes, &frame)`: like above,
+  but on ARM64 it also saves/restores `x30` for non-leaf functions.
 - `cj_builder_fn_epilogue(cj, &frame)` / `cj_builder_return(cj, &frame)`:
   restore the frame and emit `ret`.
 
@@ -16,9 +18,20 @@ around abi registers, stack setup, and label plumbing, and it looks less scary.
 - `cj_builder_arg_int(cj, index)`: returns the platform-specific argument
   register.
 - `cj_builder_scratch_reg(index)`: picks a caller-saved temporary.
+- `cj_builder_scratch_init`, `cj_builder_scratch_acquire`,
+  `cj_builder_scratch_release`: managed stack of scratch registers for balanced
+  temporaries.
 - `cj_builder_zero_operand()` + `cj_builder_clear(cj, dst)`: easy zeroing.
 - `cj_builder_assign`, `cj_builder_add_assign`, `cj_builder_sub_assign`:
   assignment sugar.
+- `cj_builder_call(ctx, scratch, label, args, count)`: loads integer argument
+  registers (up to the ABI limit), emits the proper call/bl, and optionally
+  preserves the return value via the scratch stack.
+- `cj_builder_call_unary(ctx, scratch, label, arg)`: loads the first argument
+  register, emits the right call/bl, and—when a scratch stack is supplied—moves
+  the return value into a fresh scratch slot.
+- `cj_resolve_label(ctx, module, label)`: convert a recorded label to a
+  callable pointer after finalization.
 
 ## control flow
 

@@ -2,13 +2,17 @@
 
 Small programs that showcase `cj`:
 
-    - `simple.c` – minimal
-    program(nop &ret)
-        .- `add.c` – adds a constant to the first argument and returns it;
-demonstrates register operands and constants.- `fibonacci.c` – full control -
-    flow example(labels, branches, loops) emitted with the low-level API.
-- `hl_fibonacci.c` – fibonacci again, but built entirely with the builder helpers.
-- `simd.c` – x86 and arm simd vector addition loops, exercising memory operands and floating-point registers.
+    - `simple.c`: minimal
+                  program(nop &ret)
+                      .- `add.c`: adds a constant to the first argument and returns it;
+demonstrates register operands and constants.- `fibonacci.c`: full control -
+    flow example(labels, branches, loops) emitted
+  with the low-level API.
+- `hl_fibonacci.c` – fibonacci again, but built entirely with the builder
+  helpers.
+- `simd.c` – x86 and arm simd vector addition loops, exercising memory operands
+  and floating-point registers.
+- `minilang.c` – a minimal Lisp (has addition, subtraction, functions).
 
 ## building
 
@@ -28,6 +32,9 @@ cc -std=c11 -O2 -Isrc examples/hl_fibonacci.c src/ctx.c -o hl_fibonacci_example
 
 cc -std=c11 -O2 -Isrc examples/simd.c src/ctx.c -o simd_example
 ./simd_example
+
+cc -std=c11 -O2 -Isrc examples/minilang.c src/ctx.c -o minilang
+./minilang "(def main (x) (sub (call inc x) 3)) (def inc (x) (add x 1))" 10
 ```
 
 alternatively build the library and then add `-lcj -Lbin/` instead of the c file.

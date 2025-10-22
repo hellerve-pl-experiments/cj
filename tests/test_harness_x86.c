@@ -14,8 +14,7 @@
 #include "op.h"
 #include "register.h"
 
-static void test_add_constant(void)
-{
+static void test_add_constant(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand rax = {.type = CJ_REGISTER, .reg = "rax"};
@@ -35,8 +34,7 @@ static void test_add_constant(void)
   assert(res == 42);
 }
 
-static void test_branch_loop(void)
-{
+static void test_branch_loop(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand rax = {.type = CJ_REGISTER, .reg = "rax"};
@@ -70,8 +68,7 @@ static void test_branch_loop(void)
   assert(res == 15);
 }
 
-static void test_simd_add(void)
-{
+static void test_simd_add(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand rdi = {.type = CJ_REGISTER, .reg = "rdi"};
@@ -125,14 +122,12 @@ static void test_simd_add(void)
   destroy_cj_fn(cj, (cj_fn)fn);
   destroy_cj_ctx(cj);
 
-  for (int i = 0; i < 8; ++i)
-  {
+  for (int i = 0; i < 8; ++i) {
     assert(out[i] == 9.f);
   }
 }
 
-static void test_string_movsb(void)
-{
+static void test_string_movsb(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand rdi = {.type = CJ_REGISTER, .reg = "rdi"};
@@ -159,8 +154,7 @@ static void test_string_movsb(void)
   assert(memcmp(dst, src, sizeof(src)) == 0);
 }
 
-static void test_negative_immediate(void)
-{
+static void test_negative_immediate(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand rax = {.type = CJ_REGISTER, .reg = "rax"};
@@ -180,8 +174,7 @@ static void test_negative_immediate(void)
   assert(res == 41);
 }
 
-static void test_negative_immediate_sub(void)
-{
+static void test_negative_immediate_sub(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand rax = {.type = CJ_REGISTER, .reg = "rax"};
@@ -201,8 +194,7 @@ static void test_negative_immediate_sub(void)
   assert(res == 15);
 }
 
-static void test_immediate_boundaries(void)
-{
+static void test_immediate_boundaries(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand rax = {.type = CJ_REGISTER, .reg = "rax"};
@@ -224,8 +216,7 @@ static void test_immediate_boundaries(void)
   assert(res == 99);
 }
 
-static void test_memory_addressing(void)
-{
+static void test_memory_addressing(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand rax = {.type = CJ_REGISTER, .reg = "rax"};
@@ -248,8 +239,7 @@ static void test_memory_addressing(void)
   assert(res == 20);
 }
 
-static void test_extended_registers(void)
-{
+static void test_extended_registers(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_operand rax = {.type = CJ_REGISTER, .reg = "rax"};
@@ -271,8 +261,7 @@ static void test_extended_registers(void)
   assert(res == 300);
 }
 
-int main(void)
-{
+int main(void) {
   test_add_constant();
   test_branch_loop();
   test_simd_add();

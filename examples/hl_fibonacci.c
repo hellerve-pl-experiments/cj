@@ -4,14 +4,11 @@
 
 typedef int (*fib_fn)(int);
 
-static int fib_c(int n)
-{
-  if (n <= 1)
-    return n;
+static int fib_c(int n) {
+  if (n <= 1) return n;
   int a = 0;
   int b = 1;
-  for (int i = 2; i <= n; ++i)
-  {
+  for (int i = 2; i <= n; ++i) {
     int tmp = a + b;
     a = b;
     b = tmp;
@@ -19,8 +16,7 @@ static int fib_c(int n)
   return b;
 }
 
-int main(void)
-{
+int main(void) {
   cj_ctx *cj = create_cj_ctx();
 
   cj_builder_frame frame;
@@ -53,16 +49,14 @@ int main(void)
   cj_builder_return_value(cj, &frame, acc_b);
 
   fib_fn fib_jit = (fib_fn)create_cj_fn(cj);
-  if (!fib_jit)
-  {
+  if (!fib_jit) {
     puts("failed to create jit function");
     destroy_cj_ctx(cj);
     return 1;
   }
 
   int all_pass = 1;
-  for (int idx = 0; idx <= 15; ++idx)
-  {
+  for (int idx = 0; idx <= 15; ++idx) {
     int result = fib_jit(idx);
     int expected = fib_c(idx);
     int pass = (result == expected);

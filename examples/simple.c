@@ -2,8 +2,7 @@
 #include "op.h"
 
 // this one works on both backends
-int main()
-{
+int main() {
   cj_ctx *cj = create_cj_ctx();
 
   cj_nop(cj);
