@@ -8,6 +8,8 @@ around abi registers, stack setup, and label plumbing, and it looks less scary.
 
 - `cj_builder_fn_prologue(cj, stack_bytes, &frame)`: create a frame and reserve
   optional stack space (aligned for both arches).
+- `cj_builder_fn_prologue_with_link_save(cj, stack_bytes, &frame)`: like above,
+  but on ARM64 it also saves/restores `x30` for non-leaf functions.
 - `cj_builder_fn_epilogue(cj, &frame)` / `cj_builder_return(cj, &frame)`:
   restore the frame and emit `ret`.
 

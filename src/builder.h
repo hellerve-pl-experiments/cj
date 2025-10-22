@@ -8,6 +8,8 @@
 typedef struct
 {
   size_t stack_size;
+  size_t lr_offset;
+  int save_lr;
 } cj_builder_frame;
 
 typedef struct
@@ -39,6 +41,10 @@ typedef struct
 
 static inline void cj_builder_fn_prologue(cj_ctx *ctx, size_t requested_stack_bytes,
                                           cj_builder_frame *frame);
+static inline void cj_builder_fn_prologue_with_link_save(cj_ctx *ctx, size_t requested_stack_bytes,
+                                                         cj_builder_frame *frame);
+static inline void cj_builder_fn_prologue_ex(cj_ctx *ctx, size_t requested_stack_bytes,
+                                             cj_builder_frame *frame, int save_lr);
 static inline void cj_builder_fn_epilogue(cj_ctx *ctx, const cj_builder_frame *frame);
 static inline void cj_builder_return(cj_ctx *ctx, const cj_builder_frame *frame);
 
@@ -100,33 +106,13 @@ static inline size_t align_stack_size(size_t size)
 static inline void cj_builder_fn_prologue(cj_ctx *ctx, size_t requested_stack_bytes,
                                           cj_builder_frame *frame)
 {
-  if (!ctx)
-    return;
+  cj_builder_fn_prologue_ex(ctx, requested_stack_bytes, frame, 0);
+}
 
-  size_t aligned = align_stack_size(requested_stack_bytes);
-  if (frame)
-    frame->stack_size = aligned;
-
-#if defined(__x86_64__) || defined(_M_X64)
-  cj_operand rbp = cj_make_register("rbp");
-  cj_operand rsp = cj_make_register("rsp");
-
-  cj_push(ctx, rbp);
-  cj_mov(ctx, rbp, rsp);
-
-  if (aligned)
-  {
-    cj_operand amount = cj_make_constant((uint64_t)aligned);
-    cj_sub(ctx, rsp, amount);
-  }
-#elif defined(__aarch64__) || defined(_M_ARM64)
-  cj_operand sp = cj_make_register("sp");
-  if (aligned)
-  {
-    cj_operand amount = cj_make_constant((uint64_t)aligned);
-    cj_sub(ctx, sp, amount);
-  }
-#endif
+static inline void cj_builder_fn_prologue_with_link_save(cj_ctx *ctx, size_t requested_stack_bytes,
+                                                         cj_builder_frame *frame)
+{
+  cj_builder_fn_prologue_ex(ctx, requested_stack_bytes, frame, 1);
 }
 
 static inline void cj_builder_fn_epilogue(cj_ctx *ctx, const cj_builder_frame *frame)
@@ -134,10 +120,12 @@ static inline void cj_builder_fn_epilogue(cj_ctx *ctx, const cj_builder_frame *f
   if (!ctx)
     return;
   size_t aligned = frame ? frame->stack_size : 0;
+  int save_lr = (frame && frame->save_lr);
 
 #if defined(__x86_64__) || defined(_M_X64)
   cj_operand rbp = cj_make_register("rbp");
   cj_operand rsp = cj_make_register("rsp");
+  (void)save_lr;
 
   if (aligned)
   {
@@ -148,12 +136,23 @@ static inline void cj_builder_fn_epilogue(cj_ctx *ctx, const cj_builder_frame *f
   cj_pop(ctx, rbp);
 #elif defined(__aarch64__) || defined(_M_ARM64)
   cj_operand sp = cj_make_register("sp");
+  size_t total = aligned + (save_lr ? 16 : 0);
 
-  if (aligned)
+  if (save_lr)
   {
-    cj_operand amount = cj_make_constant((uint64_t)aligned);
+    size_t lr_offset = frame ? frame->lr_offset : aligned;
+    cj_operand lr = cj_make_register("x30");
+    cj_operand slot = cj_make_memory("sp", NULL, 1, (int32_t)lr_offset);
+    cj_ldr(ctx, lr, slot);
+  }
+
+  if (total)
+  {
+    cj_operand amount = cj_make_constant((uint64_t)total);
     cj_add(ctx, sp, amount);
   }
+#else
+  (void)save_lr;
 #endif
 }
 
@@ -670,4 +669,54 @@ cj_builder_call(cj_ctx *ctx, cj_builder_scratch *scratch, cj_label target,
   }
 
   return cj_builder_return_reg();
+}
+
+static inline void cj_builder_fn_prologue_ex(cj_ctx *ctx, size_t requested_stack_bytes,
+                                             cj_builder_frame *frame, int save_lr)
+{
+  if (!ctx)
+    return;
+  assert(!save_lr || frame);
+
+  size_t aligned = align_stack_size(requested_stack_bytes);
+  size_t lr_offset = aligned;
+  if (frame)
+  {
+    frame->stack_size = aligned;
+    frame->save_lr = save_lr ? 1 : 0;
+    frame->lr_offset = save_lr ? lr_offset : 0;
+  }
+
+#if defined(__x86_64__) || defined(_M_X64)
+  (void)save_lr;
+  cj_operand rbp = cj_make_register("rbp");
+  cj_operand rsp = cj_make_register("rsp");
+
+  cj_push(ctx, rbp);
+  cj_mov(ctx, rbp, rsp);
+
+  if (aligned)
+  {
+    cj_operand amount = cj_make_constant((uint64_t)aligned);
+    cj_sub(ctx, rsp, amount);
+  }
+#elif defined(__aarch64__) || defined(_M_ARM64)
+  size_t total = aligned + (save_lr ? 16 : 0);
+  cj_operand sp = cj_make_register("sp");
+
+  if (total)
+  {
+    cj_operand amount = cj_make_constant((uint64_t)total);
+    cj_sub(ctx, sp, amount);
+  }
+
+  if (save_lr)
+  {
+    cj_operand lr = cj_make_register("x30");
+    cj_operand slot = cj_make_memory("sp", NULL, 1, (int32_t)lr_offset);
+    cj_str(ctx, lr, slot);
+  }
+#else
+  (void)save_lr;
+#endif
 }

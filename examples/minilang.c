@@ -334,24 +334,10 @@ static void emit_function(codegen *cg, function *fn)
 {
   cj_builder_scratch_init(&cg->scratch);
   cj_mark_label(cg->cj, fn->entry);
-#if defined(__aarch64__) || defined(_M_ARM64)
-  cj_operand sp = cj_make_register("sp");
-  cj_sub(cg->cj, sp, cj_make_constant(16));
-  cj_str(cg->cj, cj_make_register("x30"), cj_make_memory("sp", NULL, 1, 0));
-  cj_operand result = emit_expr(cg, fn->body);
-  if (!(result.type == CJ_REGISTER && result.reg && strcmp(result.reg, "w0") == 0))
-  {
-    cj_mov(cg->cj, cj_make_register("w0"), result);
-  }
-  cj_ldr(cg->cj, cj_make_register("x30"), cj_make_memory("sp", NULL, 1, 0));
-  cj_add(cg->cj, sp, cj_make_constant(16));
-  cj_ret(cg->cj);
-#else
   cj_builder_frame frame;
-  cj_builder_fn_prologue(cg->cj, 0, &frame);
+  cj_builder_fn_prologue_with_link_save(cg->cj, 0, &frame);
   cj_operand result = emit_expr(cg, fn->body);
   cj_builder_return_value(cg->cj, &frame, result);
-#endif
   cj_builder_scratch_release(&cg->scratch);
 }
 
