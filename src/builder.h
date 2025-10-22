@@ -76,6 +76,13 @@ static inline unsigned cj_builder_scratch_capacity(void);
 static inline void cj_builder_scratch_init(cj_builder_scratch *scratch);
 static inline cj_operand cj_builder_scratch_acquire(cj_builder_scratch *scratch);
 static inline void cj_builder_scratch_release(cj_builder_scratch *scratch);
+static inline unsigned cj_builder_arg_int_capacity(void);
+static inline void cj_builder_call_label(cj_ctx *ctx, cj_label target);
+static inline cj_operand
+cj_builder_call(cj_ctx *ctx, cj_builder_scratch *scratch, cj_label target,
+                const cj_operand *args, size_t arg_count);
+static inline cj_operand cj_builder_call_unary(cj_ctx *ctx, cj_builder_scratch *scratch,
+                                               cj_label target, cj_operand arg0);
 
 #include <assert.h>
 #include <stdint.h>
@@ -587,6 +594,15 @@ static inline unsigned cj_builder_scratch_capacity(void)
 #endif
 }
 
+static inline unsigned cj_builder_arg_int_capacity(void)
+{
+#if defined(__x86_64__) || defined(_M_X64)
+  return 6;
+#elif defined(__aarch64__) || defined(_M_ARM64)
+  return 8;
+#endif
+}
+
 static inline void cj_builder_scratch_init(cj_builder_scratch *scratch)
 {
   if (!scratch)
@@ -607,4 +623,51 @@ static inline void cj_builder_scratch_release(cj_builder_scratch *scratch)
   assert(scratch);
   assert(scratch->depth > 0);
   scratch->depth--;
+}
+
+static inline void cj_builder_call_label(cj_ctx *ctx, cj_label target)
+{
+#if defined(__x86_64__) || defined(_M_X64)
+  cj_call(ctx, target);
+#elif defined(__aarch64__) || defined(_M_ARM64)
+  cj_bl(ctx, target);
+#endif
+}
+
+static inline cj_operand cj_builder_call_unary(cj_ctx *ctx, cj_builder_scratch *scratch,
+                                               cj_label target, cj_operand arg0)
+{
+  const cj_operand args[] = {arg0};
+  return cj_builder_call(ctx, scratch, target, args, 1);
+}
+
+static inline cj_operand
+cj_builder_call(cj_ctx *ctx, cj_builder_scratch *scratch, cj_label target,
+                const cj_operand *args, size_t arg_count)
+{
+  if (!ctx)
+    return cj_builder_return_reg();
+
+  unsigned capacity = cj_builder_arg_int_capacity();
+  assert(arg_count <= capacity);
+
+  for (size_t i = 0; i < arg_count; ++i)
+  {
+    cj_operand reg = cj_builder_arg_int(ctx, (unsigned)i);
+    cj_builder_assign(ctx, reg, args[i]);
+  }
+
+  if (scratch)
+    cj_builder_scratch_release(scratch);
+
+  cj_builder_call_label(ctx, target);
+
+  if (scratch)
+  {
+    cj_operand dst = cj_builder_scratch_acquire(scratch);
+    cj_builder_assign(ctx, dst, cj_builder_return_reg());
+    return dst;
+  }
+
+  return cj_builder_return_reg();
 }

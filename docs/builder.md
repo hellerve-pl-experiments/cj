@@ -22,6 +22,12 @@ around abi registers, stack setup, and label plumbing, and it looks less scary.
 - `cj_builder_zero_operand()` + `cj_builder_clear(cj, dst)`: easy zeroing.
 - `cj_builder_assign`, `cj_builder_add_assign`, `cj_builder_sub_assign`:
   assignment sugar.
+- `cj_builder_call(ctx, scratch, label, args, count)`: loads integer argument
+  registers (up to the ABI limit), emits the proper call/bl, and optionally
+  preserves the return value via the scratch stack.
+- `cj_builder_call_unary(ctx, scratch, label, arg)`: loads the first argument
+  register, emits the right call/bl, and—when a scratch stack is supplied—moves
+  the return value into a fresh scratch slot.
 
 ## control flow
 

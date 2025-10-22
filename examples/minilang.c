@@ -323,16 +323,7 @@ static cj_operand emit_expr(codegen *cg, node *n)
   case NODE_CALL:
   {
     cj_operand arg = emit_expr(cg, n->arg);
-    cj_builder_assign(cg->cj, cj_builder_arg_int(cg->cj, 0), arg);
-    cj_builder_scratch_release(&cg->scratch);
-#if defined(__aarch64__) || defined(_M_ARM64)
-    cj_bl(cg->cj, cg->functions[n->target].entry);
-#else
-    cj_call(cg->cj, cg->functions[n->target].entry);
-#endif
-    cj_operand dst = cj_builder_scratch_acquire(&cg->scratch);
-    cj_builder_assign(cg->cj, dst, cj_builder_return_reg());
-    return dst;
+    return cj_builder_call_unary(cg->cj, &cg->scratch, cg->functions[n->target].entry, arg);
   }
   }
   fprintf(stderr, "unsupported node kind\n");
