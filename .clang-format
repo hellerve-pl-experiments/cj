@@ -3,6 +3,7 @@ IndentWidth: 2
 ColumnLimit: 100
 UseTab: Never
 AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Empty
 BreakBeforeBraces: Allman
 SpaceBeforeParens: ControlStatements

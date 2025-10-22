@@ -162,8 +162,7 @@ cj_label cj_create_label(cj_ctx *ctx)
 
 void cj_mark_label(cj_ctx *ctx, cj_label label)
 {
-  if (label.id < 0 || label.id >= ctx->num_labels)
-    return;
+  if (label.id < 0 || label.id >= ctx->num_labels) return;
 
   ctx->label_positions[label.id] = ctx->len;
 
@@ -265,10 +264,10 @@ void cj_emit_x86_rel(cj_ctx *ctx, const uint8_t *opcode, size_t opcode_len, uint
     int64_t rel = (int64_t)ctx->label_positions[label.id] - (int64_t)(disp_pos + disp_width);
     int64_t min = -(1LL << ((disp_width * 8) - 1));
     int64_t max = (1LL << ((disp_width * 8) - 1)) - 1;
-    if (rel < min || rel > max)
-      return;
+    if (rel < min || rel > max) return;
 
-    for (uint8_t b = 0; b < disp_width; b++) ctx->mem[disp_pos + b] = (uint8_t)((rel >> (8 * b)) & 0xFF);
+    for (uint8_t b = 0; b < disp_width; b++)
+      ctx->mem[disp_pos + b] = (uint8_t)((rel >> (8 * b)) & 0xFF);
   }
   else
   {
