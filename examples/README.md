@@ -2,10 +2,11 @@
 
 Small programs that showcase `cj`:
 
-- `simple.c`: minimal program(nop & ret).
-- `add.c`: adds a constant to the first argument and returns it; demonstrates
-  register operands and constants.
-- `fibonacci.c`: full control-flow example(labels, branches, loops) emitted
+    - `simple.c`: minimal
+                  program(nop &ret)
+                      .- `add.c`: adds a constant to the first argument and returns it;
+demonstrates register operands and constants.- `fibonacci.c`: full control -
+    flow example(labels, branches, loops) emitted
   with the low-level API.
 - `hl_fibonacci.c` – fibonacci again, but built entirely with the builder
   helpers.

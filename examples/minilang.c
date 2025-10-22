@@ -72,8 +72,7 @@ typedef struct
 
 static void next_token(lexer *lx)
 {
-  while (*lx->cur && isspace((unsigned char)*lx->cur))
-    lx->cur++;
+  while (*lx->cur && isspace((unsigned char)*lx->cur)) lx->cur++;
   char c = *lx->cur;
   if (!c)
   {
@@ -99,8 +98,7 @@ static void next_token(lexer *lx)
     lx->tok.kind = TOK_NUMBER;
     lx->tok.value = (int)val;
     size_t len = (size_t)(end - lx->cur);
-    if (len >= sizeof(lx->tok.text))
-      len = sizeof(lx->tok.text) - 1;
+    if (len >= sizeof(lx->tok.text)) len = sizeof(lx->tok.text) - 1;
     memcpy(lx->tok.text, lx->cur, len);
     lx->tok.text[len] = '\0';
     lx->cur = end;
@@ -109,11 +107,9 @@ static void next_token(lexer *lx)
   if (isalpha((unsigned char)c))
   {
     const char *start = lx->cur;
-    while (*lx->cur && (isalnum((unsigned char)*lx->cur) || *lx->cur == '_'))
-      lx->cur++;
+    while (*lx->cur && (isalnum((unsigned char)*lx->cur) || *lx->cur == '_')) lx->cur++;
     size_t len = (size_t)(lx->cur - start);
-    if (len >= sizeof(lx->tok.text))
-      len = sizeof(lx->tok.text) - 1;
+    if (len >= sizeof(lx->tok.text)) len = sizeof(lx->tok.text) - 1;
     memcpy(lx->tok.text, start, len);
     lx->tok.text[len] = '\0';
     lx->tok.kind = TOK_IDENT;
@@ -261,8 +257,7 @@ static int find_function(function *fns, int count, const char *name)
 {
   for (int i = 0; i < count; i++)
   {
-    if (strcmp(fns[i].name, name) == 0)
-      return i;
+    if (strcmp(fns[i].name, name) == 0) return i;
   }
   return -1;
 }
@@ -379,14 +374,12 @@ int main(void)
   resolve_calls(&arena, functions, function_count);
 
   cj_ctx *cj = create_cj_ctx();
-  for (int i = 0; i < function_count; i++)
-    functions[i].entry = cj_create_label(cj);
+  for (int i = 0; i < function_count; i++) functions[i].entry = cj_create_label(cj);
 
   codegen cg = {.cj = cj, .functions = functions};
   emit_function(&cg, &functions[main_idx]);
   for (int i = 0; i < function_count; i++)
-    if (i != main_idx)
-      emit_function(&cg, &functions[i]);
+    if (i != main_idx) emit_function(&cg, &functions[i]);
 
   cj_fn module = create_cj_fn(cj);
   if (!module)

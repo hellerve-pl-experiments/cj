@@ -27,8 +27,7 @@ typedef int (*fib_fn)(int);
 // Reference implementation for comparison
 int fib_c(int n)
 {
-  if (n <= 1)
-    return n;
+  if (n <= 1) return n;
   int a = 0, b = 1;
   for (int i = 2; i <= n; i++)
   {
