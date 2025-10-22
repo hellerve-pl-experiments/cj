@@ -277,7 +277,7 @@ static void emit_function(codegen *cg, function *fn) {
   cj_builder_scratch_release(&cg->scratch);
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   node_arena arena = {0};
   function functions[MAX_FUN];
   int function_count = 0;

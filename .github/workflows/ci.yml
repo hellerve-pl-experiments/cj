@@ -101,7 +101,7 @@ jobs:
         timeout-minutes: 1
         run: |
           ${{ matrix.cc }} -std=c11 -O2 -Isrc examples/minilang.c src/ctx.c -o minilang_example
-          ./minilang_example
+          ./minilang_example "(def main (x) (add 10 (dec x))) (def dec (y) (sub y 1))" 10
 
       - name: Build and run SIMD example
         run: |
