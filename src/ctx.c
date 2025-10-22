@@ -165,8 +165,7 @@ void cj_mark_label(cj_ctx *ctx, cj_label label)
       if (ctx->fixups[i].kind == CJ_FIXUP_KIND_ARM_BRANCH)
       {
         uint64_t instr_pos = ctx->fixups[i].patch_offset;
-        int64_t byte_offset =
-            (int64_t)ctx->label_positions[label.id] - (int64_t)instr_pos;
+        int64_t byte_offset = (int64_t)ctx->label_positions[label.id] - (int64_t)instr_pos;
         int64_t instr_offset = byte_offset / 4;
 
         uint32_t instr = ctx->mem[instr_pos] | (ctx->mem[instr_pos + 1] << 8) |
@@ -174,8 +173,7 @@ void cj_mark_label(cj_ctx *ctx, cj_label label)
 
         uint32_t offset_mask = ((1U << ctx->fixups[i].info.arm.offset_bits) - 1);
         instr &= ~(offset_mask << ctx->fixups[i].info.arm.offset_shift);
-        instr |= (((uint32_t)instr_offset & offset_mask)
-                  << ctx->fixups[i].info.arm.offset_shift);
+        instr |= (((uint32_t)instr_offset & offset_mask) << ctx->fixups[i].info.arm.offset_shift);
 
         ctx->mem[instr_pos] = instr & 0xFF;
         ctx->mem[instr_pos + 1] = (instr >> 8) & 0xFF;
@@ -213,8 +211,7 @@ void cj_emit_branch(cj_ctx *ctx, uint32_t base_instr, cj_label label, uint8_t of
 
   if (label.id >= 0 && label.id < ctx->num_labels && ctx->label_positions[label.id] != UINT64_MAX)
   {
-    int64_t byte_offset =
-        (int64_t)ctx->label_positions[label.id] - (int64_t)current_pos;
+    int64_t byte_offset = (int64_t)ctx->label_positions[label.id] - (int64_t)current_pos;
     int64_t instr_offset = byte_offset / 4;
 
     uint32_t offset_mask = ((1U << offset_bits) - 1);
