@@ -277,15 +277,12 @@ static void emit_function(codegen *cg, function *fn) {
   cj_builder_scratch_release(&cg->scratch);
 }
 
-static const char *program_source = "(def main (x) (sub (call inc x) 3))\n"
-                                    "(def inc (x) (add x 1))\n";
-
-int main(void) {
+int main(int argc, char** argv) {
   node_arena arena = {0};
   function functions[MAX_FUN];
   int function_count = 0;
   lexer lx;
-  init_lexer(&lx, program_source);
+  init_lexer(&lx, argv[1]);
 
   while (lx.tok.kind != TOK_END) {
     if (function_count >= MAX_FUN) {
@@ -320,12 +317,10 @@ int main(void) {
     functions[i].fn = (int (*)(int))addr;
   }
 
-  printf("minilang demo:\n");
   function *main_fn = &functions[main_idx];
-  for (int i = 0; i <= 5; i++) {
-    int result = main_fn->fn(i);
-    printf("  main(%d) = %d\n", i, result);
-  }
+  int input = strtol(argv[2], NULL, 10);
+  int result = main_fn->fn(input);
+  printf("main(%d) = %d\n", input, result);
 
   destroy_cj_fn(cj, module);
   destroy_cj_ctx(cj);
