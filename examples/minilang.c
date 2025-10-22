@@ -289,29 +289,8 @@ typedef struct
 {
   cj_ctx *cj;
   function *functions;
-  int scratch_depth;
+  cj_builder_scratch scratch;
 } codegen;
-
-static cj_operand acquire_scratch(codegen *cg)
-{
-  if (cg->scratch_depth >= 6)
-  {
-    fprintf(stderr, "scratch register exhausted\n");
-    exit(1);
-  }
-  int idx = cg->scratch_depth++;
-  return cj_builder_scratch_reg((unsigned)idx);
-}
-
-static void release_scratch(codegen *cg)
-{
-  if (cg->scratch_depth <= 0)
-  {
-    fprintf(stderr, "release underflow\n");
-    exit(1);
-  }
-  cg->scratch_depth--;
-}
 
 static cj_operand emit_expr(codegen *cg, node *n)
 {
@@ -319,13 +298,13 @@ static cj_operand emit_expr(codegen *cg, node *n)
   {
   case NODE_NUM:
   {
-    cj_operand dst = acquire_scratch(cg);
+    cj_operand dst = cj_builder_scratch_acquire(&cg->scratch);
     cj_builder_assign(cg->cj, dst, cj_make_constant((uint64_t)(uint32_t)n->value));
     return dst;
   }
   case NODE_PARAM:
   {
-    cj_operand dst = acquire_scratch(cg);
+    cj_operand dst = cj_builder_scratch_acquire(&cg->scratch);
     cj_builder_assign(cg->cj, dst, cj_builder_arg_int(cg->cj, 0));
     return dst;
   }
@@ -338,20 +317,20 @@ static cj_operand emit_expr(codegen *cg, node *n)
       cj_add(cg->cj, lhs, rhs);
     else
       cj_sub(cg->cj, lhs, rhs);
-    release_scratch(cg);
+    cj_builder_scratch_release(&cg->scratch);
     return lhs;
   }
   case NODE_CALL:
   {
     cj_operand arg = emit_expr(cg, n->arg);
     cj_builder_assign(cg->cj, cj_builder_arg_int(cg->cj, 0), arg);
-    release_scratch(cg);
+    cj_builder_scratch_release(&cg->scratch);
 #if defined(__aarch64__) || defined(_M_ARM64)
     cj_bl(cg->cj, cg->functions[n->target].entry);
 #else
     cj_call(cg->cj, cg->functions[n->target].entry);
 #endif
-    cj_operand dst = acquire_scratch(cg);
+    cj_operand dst = cj_builder_scratch_acquire(&cg->scratch);
     cj_builder_assign(cg->cj, dst, cj_builder_return_reg());
     return dst;
   }
@@ -362,7 +341,7 @@ static cj_operand emit_expr(codegen *cg, node *n)
 
 static void emit_function(codegen *cg, function *fn)
 {
-  cg->scratch_depth = 0;
+  cj_builder_scratch_init(&cg->scratch);
   cj_mark_label(cg->cj, fn->entry);
 #if defined(__aarch64__) || defined(_M_ARM64)
   cj_operand sp = cj_make_register("sp");
@@ -382,7 +361,7 @@ static void emit_function(codegen *cg, function *fn)
   cj_operand result = emit_expr(cg, fn->body);
   cj_builder_return_value(cg->cj, &frame, result);
 #endif
-  release_scratch(cg);
+  cj_builder_scratch_release(&cg->scratch);
 }
 
 static const char *program_source = "(def main (x) (sub (call inc x) 3))\n"
@@ -426,7 +405,7 @@ int main(void)
   for (int i = 0; i < function_count; i++)
     functions[i].entry = cj_create_label(cj);
 
-  codegen cg = {.cj = cj, .functions = functions, .scratch_depth = 0};
+  codegen cg = {.cj = cj, .functions = functions};
   emit_function(&cg, &functions[main_idx]);
   for (int i = 0; i < function_count; i++)
     if (i != main_idx)

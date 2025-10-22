@@ -31,6 +31,9 @@ cc -std=c11 -O2 -Isrc examples/hl_fibonacci.c src/ctx.c -o hl_fibonacci_example
 
 cc -std=c11 -O2 -Isrc examples/simd.c src/ctx.c -o simd_example
 ./simd_example
+
+cc -std=c11 -O2 -Isrc examples/minilang.c src/ctx.c -o minilang
+./minilang
 ```
 
 alternatively build the library and then add `-lcj -Lbin/` instead of the c file.

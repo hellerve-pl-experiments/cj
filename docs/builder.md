@@ -16,6 +16,9 @@ around abi registers, stack setup, and label plumbing, and it looks less scary.
 - `cj_builder_arg_int(cj, index)`: returns the platform-specific argument
   register.
 - `cj_builder_scratch_reg(index)`: picks a caller-saved temporary.
+- `cj_builder_scratch_init`, `cj_builder_scratch_acquire`,
+  `cj_builder_scratch_release`: managed stack of scratch registers for balanced
+  temporaries.
 - `cj_builder_zero_operand()` + `cj_builder_clear(cj, dst)`: easy zeroing.
 - `cj_builder_assign`, `cj_builder_add_assign`, `cj_builder_sub_assign`:
   assignment sugar.

@@ -32,6 +32,11 @@ typedef struct
   cj_condition exit_cond;
 } cj_builder_for_loop;
 
+typedef struct
+{
+  unsigned depth;
+} cj_builder_scratch;
+
 static inline void cj_builder_fn_prologue(cj_ctx *ctx, size_t requested_stack_bytes,
                                           cj_builder_frame *frame);
 static inline void cj_builder_fn_epilogue(cj_ctx *ctx, const cj_builder_frame *frame);
@@ -67,6 +72,10 @@ static inline void cj_builder_return_value(cj_ctx *ctx, const cj_builder_frame *
 static inline cj_operand cj_builder_zero_operand(void);
 static inline void cj_builder_clear(cj_ctx *ctx, cj_operand dst);
 static inline cj_operand cj_builder_scratch_reg(unsigned index);
+static inline unsigned cj_builder_scratch_capacity(void);
+static inline void cj_builder_scratch_init(cj_builder_scratch *scratch);
+static inline cj_operand cj_builder_scratch_acquire(cj_builder_scratch *scratch);
+static inline void cj_builder_scratch_release(cj_builder_scratch *scratch);
 
 #include <assert.h>
 #include <stdint.h>
@@ -567,4 +576,35 @@ static inline cj_operand cj_builder_scratch_reg(unsigned index)
   (void)count;
   return cj_make_register(regs[index]);
 #endif
+}
+
+static inline unsigned cj_builder_scratch_capacity(void)
+{
+#if defined(__x86_64__) || defined(_M_X64)
+  return 6;
+#elif defined(__aarch64__) || defined(_M_ARM64)
+  return 6;
+#endif
+}
+
+static inline void cj_builder_scratch_init(cj_builder_scratch *scratch)
+{
+  if (!scratch)
+    return;
+  scratch->depth = 0;
+}
+
+static inline cj_operand cj_builder_scratch_acquire(cj_builder_scratch *scratch)
+{
+  assert(scratch);
+  assert(scratch->depth < cj_builder_scratch_capacity());
+  unsigned index = scratch->depth++;
+  return cj_builder_scratch_reg(index);
+}
+
+static inline void cj_builder_scratch_release(cj_builder_scratch *scratch)
+{
+  assert(scratch);
+  assert(scratch->depth > 0);
+  scratch->depth--;
 }
