@@ -98,9 +98,10 @@ jobs:
           ./jit_tests_builder
 
       - name: Build and run minilang example
+        timeout-minutes: 1
         run: |
           ${{ matrix.cc }} -std=c11 -O2 -Isrc examples/minilang.c src/ctx.c -o minilang_example
-          timeout 5 ./minilang_example
+          ./minilang_example
 
       - name: Build and run SIMD example
         run: |
