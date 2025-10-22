@@ -385,9 +385,8 @@ static void emit_function(codegen *cg, function *fn)
   release_scratch(cg);
 }
 
-static const char *program_source =
-    "(def main (x) (sub (call inc x) 2))\n"
-    "(def inc (x) (add x 1))\n";
+static const char *program_source = "(def main (x) (sub (call inc x) 2))\n"
+                                    "(def inc (x) (add x 1))\n";
 
 int main(void)
 {
