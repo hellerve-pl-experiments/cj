@@ -1,4 +1,4 @@
-// minimal s-expression jit example for cj. build:
+// minimal s-expression jit example for cj
 
 #include <ctype.h>
 #include <stdint.h>
