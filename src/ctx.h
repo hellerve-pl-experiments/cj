@@ -5,38 +5,28 @@
 
 typedef void (*cj_fn)(void);
 
-typedef struct
-{
+typedef struct {
   int id;
 } cj_label;
 
-typedef enum
-{
-  CJ_FIXUP_KIND_ARM_BRANCH,
-  CJ_FIXUP_KIND_X86_RELATIVE
-} cj_fixup_kind;
+typedef enum { CJ_FIXUP_KIND_ARM_BRANCH, CJ_FIXUP_KIND_X86_RELATIVE } cj_fixup_kind;
 
-typedef struct
-{
+typedef struct {
   int label_id;
   uint64_t patch_offset;
   cj_fixup_kind kind;
-  union
-  {
-    struct
-    {
+  union {
+    struct {
       uint8_t offset_bits;
       uint8_t offset_shift;
     } arm;
-    struct
-    {
+    struct {
       uint8_t width;
     } x86;
   } info;
 } cj_fixup;
 
-typedef struct
-{
+typedef struct {
   uint8_t *mem;
   uint64_t len;
   uint64_t size;

@@ -5,8 +5,7 @@
 
 typedef void (*simd_add_fn)(float *, const float *, const float *, int);
 
-int main(void)
-{
+int main(void) {
 #ifdef __x86_64__
   float a[8] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
   float b[8] = {8.0f, 7.0f, 6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f};
@@ -63,8 +62,7 @@ int main(void)
   destroy_cj_fn(cj, (cj_fn)fn);
   destroy_cj_ctx(cj);
 
-  for (int i = 0; i < length; ++i)
-  {
+  for (int i = 0; i < length; ++i) {
     printf("out[%d] = %.1f\n", i, out[i]);
   }
 #elif defined(__aarch64__)
@@ -143,8 +141,7 @@ int main(void)
   destroy_cj_fn(cj, (cj_fn)fn);
   destroy_cj_ctx(cj);
 
-  for (int i = 0; i < length; ++i)
-  {
+  for (int i = 0; i < length; ++i) {
     printf("out[%d] = %.1f\n", i, out[i]);
   }
 #else

@@ -5,5 +5,5 @@ UseTab: Never
 AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Empty
-BreakBeforeBraces: Allman
+BreakBeforeBraces: Attach
 SpaceBeforeParens: ControlStatements

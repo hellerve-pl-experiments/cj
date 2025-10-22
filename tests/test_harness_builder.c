@@ -7,8 +7,7 @@
 typedef int (*fn1_t)(int);
 typedef int (*fn2_t)(int, int);
 
-static void test_assign_and_add(void)
-{
+static void test_assign_and_add(void) {
   cj_ctx *cj = create_cj_ctx();
   cj_builder_frame frame;
   cj_builder_fn_prologue(cj, 0, &frame);
@@ -30,8 +29,7 @@ static void test_assign_and_add(void)
   destroy_cj_ctx(cj);
 }
 
-static void test_scratch_helpers(void)
-{
+static void test_scratch_helpers(void) {
   cj_ctx *cj = create_cj_ctx();
   cj_builder_frame frame;
   cj_builder_fn_prologue(cj, 0, &frame);
@@ -66,8 +64,7 @@ static void test_scratch_helpers(void)
   destroy_cj_ctx(cj);
 }
 
-static void test_call_helper(void)
-{
+static void test_call_helper(void) {
   cj_ctx *cj = create_cj_ctx();
   cj_label entry = cj_create_label(cj);
   cj_label callee = cj_create_label(cj);
@@ -109,8 +106,7 @@ static void test_call_helper(void)
   destroy_cj_ctx(cj);
 }
 
-static void test_for_loop_sum(void)
-{
+static void test_for_loop_sum(void) {
   cj_ctx *cj = create_cj_ctx();
   cj_builder_frame frame;
   cj_builder_fn_prologue(cj, 0, &frame);
@@ -140,8 +136,7 @@ static void test_for_loop_sum(void)
   destroy_cj_ctx(cj);
 }
 
-static void test_if_else(void)
-{
+static void test_if_else(void) {
   cj_ctx *cj = create_cj_ctx();
   cj_builder_frame frame;
   cj_builder_fn_prologue(cj, 0, &frame);
@@ -172,8 +167,7 @@ static void test_if_else(void)
   destroy_cj_ctx(cj);
 }
 
-int main(void)
-{
+int main(void) {
   test_assign_and_add();
   test_scratch_helpers();
   test_call_helper();

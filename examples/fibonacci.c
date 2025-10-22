@@ -25,12 +25,10 @@
 typedef int (*fib_fn)(int);
 
 // Reference implementation for comparison
-int fib_c(int n)
-{
+int fib_c(int n) {
   if (n <= 1) return n;
   int a = 0, b = 1;
-  for (int i = 2; i <= n; i++)
-  {
+  for (int i = 2; i <= n; i++) {
     int temp = a + b;
     a = b;
     b = temp;
@@ -38,8 +36,7 @@ int fib_c(int n)
   return b;
 }
 
-int main(void)
-{
+int main(void) {
   // Create JIT context
   cj_ctx *cj = create_cj_ctx();
 
@@ -172,8 +169,7 @@ int main(void)
 
   // Test the JIT-compiled function
   int all_pass = 1;
-  for (int i = 0; i <= 15; i++)
-  {
+  for (int i = 0; i <= 15; i++) {
     int result = fib_jit(i);
     int expected = fib_c(i);
     int pass = (result == expected);
