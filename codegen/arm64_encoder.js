@@ -184,6 +184,8 @@ function mapOperandType(operand) {
   } else if (hoverLower.includes('general-purpose')) {
     const is64bit = hoverLower.includes('64-bit') || link.startsWith('x');
     return { type: 'reg', size: is64bit ? 64 : 32 };
+  } else if (link.startsWith('cond') || link === 'nzcv') {
+    return { type: 'imm' };
   } else if (link === 'imm' || link === 'amount' || link === 'shift' || link === 'extend' || link.startsWith('pimm') || link.startsWith('simm') || link.startsWith('imm')) {
     const match = hover.match(/\[(\d+)-(\d+)\]/);
     if (match) {
@@ -269,6 +271,22 @@ function extractFieldName(operand) {
 function findVariable(inst, name) {
   if (!inst || !inst.variables) return null;
   return inst.variables.find(v => v.name === name) || null;
+}
+
+/**
+ * Parse a bitdiffs string like "sf == 1 && N == 1 && imms == 111111"
+ * into a map { sf: 1, N: 1, imms: 63 }
+ */
+function parseBitdiffs(bitdiffs) {
+  if (!bitdiffs) return {};
+  const result = {};
+  const parts = bitdiffs.split('&&').map(s => s.trim());
+  for (const part of parts) {
+    const match = part.match(/^(\w+)\s*==\s*([01]+)$/);
+    if (!match) continue;
+    result[match[1]] = parseInt(match[2], 2);
+  }
+  return result;
 }
 
 /**
@@ -1822,7 +1840,7 @@ for (const [mnemonic, variants] of Object.entries(byMnemonic)) {
       output += `  }\n`;
 
     } else if (format === 'reg_reg_imm') {
-      const immVarNames = ['imm12', 'imm9', 'imm6', 'imm5', 'imm4', 'imm3', 'imm'];
+      const immVarNames = ['imm12', 'imm9', 'imm6', 'imm5', 'imm4', 'imm3', 'immr', 'cond', 'nzcv', 'imm'];
       const immVarName = immVarNames.find(name => findVariable(inst, name));
       const immVar = immVarName ? findVariable(inst, immVarName) : null;
       const hasImmediateField = fields.some(field => field && field.startsWith('imm'));
@@ -1861,6 +1879,31 @@ for (const [mnemonic, variants] of Object.entries(byMnemonic)) {
           if (useRuntimeCheck) {
             output += `    int sf = arm64_is_64bit(dst.reg) ? 1 : 0;\n`;
             output += `    instr |= (sf << 31);\n`;
+
+            // For bitfield instructions (UBFM/SBFM), additional bits differ
+            // between 32-bit and 64-bit variants (e.g. N bit, imms high bit).
+            // Parse bitdiffs to find and apply them.
+            const inst32entry = variantGroup.find(v => v.inst.bitdiffs && v.inst.bitdiffs.includes('sf == 0'));
+            const inst64entry = variantGroup.find(v => v.inst.bitdiffs && v.inst.bitdiffs.includes('sf == 1'));
+            if (inst32entry && inst64entry) {
+              const diffs32 = parseBitdiffs(inst32entry.inst.bitdiffs);
+              const diffs64 = parseBitdiffs(inst64entry.inst.bitdiffs);
+              for (const [fieldName, val64] of Object.entries(diffs64)) {
+                if (fieldName === 'sf') continue;
+                const val32 = diffs32[fieldName];
+                if (val32 === undefined || val32 === val64) continue;
+                const fieldVar = findVariable(inst, fieldName);
+                if (!fieldVar) continue;
+                const extraBits = val64 & ~val32;
+                if (extraBits) {
+                  output += `    if (sf) instr |= (${extraBits}u << ${fieldVar.lo});\n`;
+                }
+                const clearBits = val32 & ~val64;
+                if (clearBits) {
+                  output += `    if (sf) instr &= ~(${clearBits}u << ${fieldVar.lo});\n`;
+                }
+              }
+            }
           } else if (has64bit) {
             output += `    instr |= (1 << 31);\n`;
           }
@@ -1892,6 +1935,12 @@ for (const [mnemonic, variants] of Object.entries(byMnemonic)) {
           output += `    }\n`;
           output += `    instr &= ~(${bitMask(shField.width)} << ${shField.lo});\n`;
           output += `    instr |= ((sh & ${bitMask(shField.width)}) << ${shField.lo});\n`;
+        }
+
+        // General immediate encoding: if immVar was found and not already
+        // handled by the imm12 special case, encode it into its field.
+        if (immVar && immVarName !== 'imm12') {
+          output += `    instr |= ((imm & ${bitMask(immVar.width)}) << ${immVar.lo});\n`;
         }
 
         output += `    cj_add_u32(ctx, instr);\n`;
@@ -2246,7 +2295,7 @@ for (const [mnemonic, variants] of Object.entries(byMnemonic)) {
       output += `    return;\n`;
       output += `  }\n`;
     } else if (format === 'reg_imm') {
-      const immVarNames = ['imm', 'imm12', 'imm9', 'imm6', 'imm5', 'imm4', 'imm3'];
+      const immVarNames = ['imm', 'imm12', 'imm9', 'imm6', 'imm5', 'imm4', 'imm3', 'cond', 'nzcv'];
       const immVarName = immVarNames.find(name => findVariable(inst, name));
       const immVar = immVarName ? findVariable(inst, immVarName) : null;
       const hasImmediateField = fields.some(field => field && field.startsWith('imm'));
@@ -2266,7 +2315,7 @@ for (const [mnemonic, variants] of Object.entries(byMnemonic)) {
       const parseFunc = isFP ? 'arm64_parse_fp_reg' : 'arm64_parse_reg';
       const hasRdVar = !!findVariable(inst, 'Rd');
       const hasRnVar = !!findVariable(inst, 'Rn');
-      const immField = fields.find(field => field && field.startsWith('imm'));
+      const immField = fields.find(field => field && (field.startsWith('imm') || field === 'cond' || field === 'nzcv'));
       const immVar = immField ? findVariable(inst, immField) : null;
       const hwVar = findVariable(inst, 'hw');
 

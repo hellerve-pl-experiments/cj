@@ -167,12 +167,162 @@ static void test_if_else(void) {
   destroy_cj_ctx(cj);
 }
 
+static void test_shl(void) {
+  cj_ctx *cj = create_cj_ctx();
+  cj_builder_frame frame;
+  cj_builder_fn_prologue(cj, 0, &frame);
+
+  cj_operand r = cj_builder_scratch_reg(0);
+  cj_builder_assign(cj, r, cj_make_constant(1));
+  cj_builder_shl(cj, r, 10);
+  cj_builder_return_value(cj, &frame, r);
+
+  fn1_t fn = (fn1_t)create_cj_fn(cj);
+  assert(fn);
+  assert(fn(0) == 1024);
+
+  destroy_cj_fn(cj, (cj_fn)fn);
+  destroy_cj_ctx(cj);
+}
+
+static void test_shr(void) {
+  cj_ctx *cj = create_cj_ctx();
+  cj_builder_frame frame;
+  cj_builder_fn_prologue(cj, 0, &frame);
+
+  cj_operand r = cj_builder_scratch_reg(0);
+  cj_builder_assign(cj, r, cj_make_constant(0x8000));
+  cj_builder_shr(cj, r, 8);
+  cj_builder_return_value(cj, &frame, r);
+
+  fn1_t fn = (fn1_t)create_cj_fn(cj);
+  assert(fn);
+  assert(fn(0) == 0x80);
+
+  destroy_cj_fn(cj, (cj_fn)fn);
+  destroy_cj_ctx(cj);
+}
+
+static void test_sar(void) {
+  cj_ctx *cj = create_cj_ctx();
+  cj_builder_frame frame;
+  cj_builder_fn_prologue(cj, 0, &frame);
+
+  /* Load arg (passed as -16), arithmetic shift right by 2 → expect -4 */
+  cj_operand r = cj_builder_scratch_reg(0);
+  cj_builder_assign(cj, r, cj_builder_arg_int(cj, 0));
+  cj_builder_sar(cj, r, 2);
+  cj_builder_return_value(cj, &frame, r);
+
+  fn1_t fn = (fn1_t)create_cj_fn(cj);
+  assert(fn);
+  assert(fn(-16) == -4);
+  assert(fn(-1) == -1);  /* all-ones stays all-ones */
+  assert(fn(16) == 4);   /* positive values shift normally */
+
+  destroy_cj_fn(cj, (cj_fn)fn);
+  destroy_cj_ctx(cj);
+}
+
+static void test_cset(void) {
+  cj_ctx *cj = create_cj_ctx();
+  cj_builder_frame frame;
+  cj_builder_fn_prologue(cj, 0, &frame);
+
+  cj_operand a = cj_builder_scratch_reg(0);
+  cj_operand b = cj_builder_scratch_reg(1);
+  cj_builder_assign(cj, a, cj_builder_arg_int(cj, 0));
+  cj_builder_assign(cj, b, cj_builder_arg_int(cj, 1));
+  cj_cmp(cj, a, b);
+  cj_builder_cset(cj, a, CJ_COND_L);
+  cj_builder_return_value(cj, &frame, a);
+
+  fn2_t fn = (fn2_t)create_cj_fn(cj);
+  assert(fn);
+  assert(fn(3, 5) == 1);   /* 3 < 5 → true */
+  assert(fn(5, 3) == 0);   /* 5 < 3 → false */
+  assert(fn(4, 4) == 0);   /* 4 < 4 → false */
+  assert(fn(-1, 1) == 1);  /* -1 < 1 → true (signed) */
+
+  destroy_cj_fn(cj, (cj_fn)fn);
+  destroy_cj_ctx(cj);
+}
+
+static void test_or(void) {
+  cj_ctx *cj = create_cj_ctx();
+  cj_builder_frame frame;
+  cj_builder_fn_prologue(cj, 0, &frame);
+
+  cj_operand a = cj_builder_scratch_reg(0);
+  cj_operand b = cj_builder_scratch_reg(1);
+  cj_builder_assign(cj, a, cj_make_constant(0xF0));
+  cj_builder_assign(cj, b, cj_make_constant(0x0F));
+  cj_builder_or(cj, a, b);
+  cj_builder_return_value(cj, &frame, a);
+
+  fn1_t fn = (fn1_t)create_cj_fn(cj);
+  assert(fn);
+  assert(fn(0) == 0xFF);
+
+  destroy_cj_fn(cj, (cj_fn)fn);
+  destroy_cj_ctx(cj);
+}
+
+static void test_neg(void) {
+  cj_ctx *cj = create_cj_ctx();
+  cj_builder_frame frame;
+  cj_builder_fn_prologue(cj, 0, &frame);
+
+  cj_operand r = cj_builder_scratch_reg(0);
+  cj_builder_assign(cj, r, cj_builder_arg_int(cj, 0));
+  cj_builder_neg(cj, r);
+  cj_builder_return_value(cj, &frame, r);
+
+  fn1_t fn = (fn1_t)create_cj_fn(cj);
+  assert(fn);
+  assert(fn(42) == -42);
+  assert(fn(-7) == 7);
+  assert(fn(0) == 0);
+
+  destroy_cj_fn(cj, (cj_fn)fn);
+  destroy_cj_ctx(cj);
+}
+
+static void test_mul(void) {
+  cj_ctx *cj = create_cj_ctx();
+  cj_builder_frame frame;
+  cj_builder_fn_prologue(cj, 0, &frame);
+
+  cj_operand a = cj_builder_scratch_reg(0);
+  cj_operand b = cj_builder_scratch_reg(1);
+  cj_builder_assign(cj, a, cj_builder_arg_int(cj, 0));
+  cj_builder_assign(cj, b, cj_builder_arg_int(cj, 1));
+  cj_builder_mul(cj, a, b);
+  cj_builder_return_value(cj, &frame, a);
+
+  fn2_t fn = (fn2_t)create_cj_fn(cj);
+  assert(fn);
+  assert(fn(7, 6) == 42);
+  assert(fn(-3, 4) == -12);
+  assert(fn(0, 100) == 0);
+
+  destroy_cj_fn(cj, (cj_fn)fn);
+  destroy_cj_ctx(cj);
+}
+
 int main(void) {
   test_assign_and_add();
   test_scratch_helpers();
   test_call_helper();
   test_for_loop_sum();
   test_if_else();
+  test_shl();
+  test_shr();
+  test_sar();
+  test_cset();
+  test_or();
+  test_neg();
+  test_mul();
   puts("builder harness OK");
   return 0;
 }

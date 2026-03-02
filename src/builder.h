@@ -70,6 +70,15 @@ static inline cj_operand cj_builder_arg_int(cj_ctx *ctx, unsigned index);
 static inline cj_operand cj_builder_return_reg(void);
 static inline void cj_builder_return_value(cj_ctx *ctx, const cj_builder_frame *frame,
                                            cj_operand value);
+
+/* Cross-platform bitwise and arithmetic operations */
+static inline void cj_builder_shl(cj_ctx *ctx, cj_operand dst, int shift);
+static inline void cj_builder_shr(cj_ctx *ctx, cj_operand dst, int shift);
+static inline void cj_builder_sar(cj_ctx *ctx, cj_operand dst, int shift);
+static inline void cj_builder_cset(cj_ctx *ctx, cj_operand dst, cj_condition cond);
+static inline void cj_builder_or(cj_ctx *ctx, cj_operand dst, cj_operand src);
+static inline void cj_builder_neg(cj_ctx *ctx, cj_operand dst);
+static inline void cj_builder_mul(cj_ctx *ctx, cj_operand dst, cj_operand src);
 static inline cj_operand cj_builder_zero_operand(void);
 static inline void cj_builder_clear(cj_ctx *ctx, cj_operand dst);
 static inline cj_operand cj_builder_scratch_reg(unsigned index);
@@ -627,5 +636,153 @@ static inline void cj_builder_fn_prologue_ex(cj_ctx *ctx, size_t requested_stack
   }
 #else
   (void)save_lr;
+#endif
+}
+
+/* ===== Cross-Platform Bitwise and Arithmetic Operations ===== */
+
+#if defined(__x86_64__) || defined(_M_X64)
+
+static inline const char *builder_x86_reg8(const char *name) {
+  if (!name) return "al";
+  if (strcmp(name, "rax") == 0 || strcmp(name, "eax") == 0) return "al";
+  if (strcmp(name, "rbx") == 0 || strcmp(name, "ebx") == 0) return "bl";
+  if (strcmp(name, "rcx") == 0 || strcmp(name, "ecx") == 0) return "cl";
+  if (strcmp(name, "rdx") == 0 || strcmp(name, "edx") == 0) return "dl";
+  if (strcmp(name, "rsi") == 0 || strcmp(name, "esi") == 0) return "sil";
+  if (strcmp(name, "rdi") == 0 || strcmp(name, "edi") == 0) return "dil";
+  if (strcmp(name, "r8") == 0 || strcmp(name, "r8d") == 0) return "r8b";
+  if (strcmp(name, "r9") == 0 || strcmp(name, "r9d") == 0) return "r9b";
+  if (strcmp(name, "r10") == 0 || strcmp(name, "r10d") == 0) return "r10b";
+  if (strcmp(name, "r11") == 0 || strcmp(name, "r11d") == 0) return "r11b";
+  if (strcmp(name, "r12") == 0 || strcmp(name, "r12d") == 0) return "r12b";
+  if (strcmp(name, "r13") == 0 || strcmp(name, "r13d") == 0) return "r13b";
+  if (strcmp(name, "r14") == 0 || strcmp(name, "r14d") == 0) return "r14b";
+  if (strcmp(name, "r15") == 0 || strcmp(name, "r15d") == 0) return "r15b";
+  return "al";
+}
+
+static inline void builder_x86_setcc(cj_ctx *ctx, cj_operand r8, cj_condition cond) {
+  switch (cond) {
+  case CJ_COND_O:  cj_seto(ctx, r8);   break;
+  case CJ_COND_NO: cj_setno(ctx, r8);  break;
+  case CJ_COND_B:  cj_setb(ctx, r8);   break;
+  case CJ_COND_NB: cj_setnb(ctx, r8);  break;
+  case CJ_COND_Z:  cj_setz(ctx, r8);   break;
+  case CJ_COND_NZ: cj_setnz(ctx, r8);  break;
+  case CJ_COND_BE: cj_setbe(ctx, r8);  break;
+  case CJ_COND_A:  cj_seta(ctx, r8);   break;
+  case CJ_COND_S:  cj_sets(ctx, r8);   break;
+  case CJ_COND_NS: cj_setns(ctx, r8);  break;
+  case CJ_COND_P:  cj_setp(ctx, r8);   break;
+  case CJ_COND_NP: cj_setnp(ctx, r8);  break;
+  case CJ_COND_L:  cj_setl(ctx, r8);   break;
+  case CJ_COND_GE: cj_setge(ctx, r8);  break;
+  case CJ_COND_LE: cj_setle(ctx, r8);  break;
+  case CJ_COND_G:  cj_setg(ctx, r8);   break;
+  default: assert(0 && "unsupported condition for setcc"); break;
+  }
+}
+
+#elif defined(__aarch64__) || defined(_M_ARM64)
+
+/* Map cj_condition enum values to ARM64 4-bit condition codes.
+   Index = cj_condition value (x86-ordered), value = ARM64 code. */
+static inline int builder_arm64_cond_code(cj_condition cond) {
+  static const int table[16] = {
+    6,   /* CJ_COND_O  (0)  → VS  (6)  */
+    7,   /* CJ_COND_NO (1)  → VC  (7)  */
+    3,   /* CJ_COND_B  (2)  → CC  (3)  */
+    2,   /* CJ_COND_NB (3)  → CS  (2)  */
+    0,   /* CJ_COND_Z  (4)  → EQ  (0)  */
+    1,   /* CJ_COND_NZ (5)  → NE  (1)  */
+    9,   /* CJ_COND_BE (6)  → LS  (9)  */
+    8,   /* CJ_COND_A  (7)  → HI  (8)  */
+    4,   /* CJ_COND_S  (8)  → MI  (4)  */
+    5,   /* CJ_COND_NS (9)  → PL  (5)  */
+    6,   /* CJ_COND_P  (10) → VS  (6)  */
+    7,   /* CJ_COND_NP (11) → VC  (7)  */
+    11,  /* CJ_COND_L  (12) → LT  (11) */
+    10,  /* CJ_COND_GE (13) → GE  (10) */
+    13,  /* CJ_COND_LE (14) → LE  (13) */
+    12,  /* CJ_COND_G  (15) → GT  (12) */
+  };
+  return table[cond & 0xf];
+}
+
+#endif
+
+static inline void cj_builder_shl(cj_ctx *ctx, cj_operand dst, int shift) {
+  if (!ctx || shift == 0) return;
+#if defined(__x86_64__) || defined(_M_X64)
+  cj_shl(ctx, dst, cj_make_constant((uint64_t)shift));
+#elif defined(__aarch64__) || defined(_M_ARM64)
+  int rd = arm64_parse_reg(dst.reg);
+  int is64 = arm64_is_64bit(dst.reg);
+  int size = is64 ? 64 : 32;
+  int immr = (-shift) & (size - 1);
+  int imms = size - 1 - shift;
+  uint32_t base = is64 ? 0xD3400000u : 0x53000000u;
+  uint32_t instr = base
+      | (uint32_t)(rd & 0x1f)
+      | ((uint32_t)(rd & 0x1f) << 5)
+      | ((uint32_t)(imms & 0x3f) << 10)
+      | ((uint32_t)(immr & 0x3f) << 16);
+  cj_add_u32(ctx, instr);
+#endif
+}
+
+static inline void cj_builder_shr(cj_ctx *ctx, cj_operand dst, int shift) {
+  if (!ctx || shift == 0) return;
+  cj_lsr(ctx, dst, cj_make_constant((uint64_t)shift));
+}
+
+static inline void cj_builder_sar(cj_ctx *ctx, cj_operand dst, int shift) {
+  if (!ctx || shift == 0) return;
+  cj_asr(ctx, dst, cj_make_constant((uint64_t)shift));
+}
+
+static inline void cj_builder_cset(cj_ctx *ctx, cj_operand dst, cj_condition cond) {
+  if (!ctx) return;
+#if defined(__x86_64__) || defined(_M_X64)
+  /* SETcc into 8-bit sub-register (reads flags), then MOVZX to zero-extend.
+     MOVZX doesn't affect flags, so this is safe after any CMP. */
+  const char *r8name = builder_x86_reg8(dst.reg);
+  cj_operand r8 = cj_make_register(r8name);
+  builder_x86_setcc(ctx, r8, cond);
+  cj_movzx(ctx, dst, r8);
+#elif defined(__aarch64__) || defined(_M_ARM64)
+  /* CSET Xd, cond  →  CSINC Xd, XZR, XZR, invert(cond)
+     The backend cj_cset takes the raw ARM64 condition code, so we
+     map from cj_condition and invert (ARM64 CSET semantics). */
+  int inv_cond = builder_arm64_cond_code(invert_condition(cond));
+  cj_cset(ctx, dst, cj_make_constant((uint64_t)inv_cond));
+#endif
+}
+
+static inline void cj_builder_or(cj_ctx *ctx, cj_operand dst, cj_operand src) {
+  if (!ctx) return;
+#if defined(__x86_64__) || defined(_M_X64)
+  cj_or(ctx, dst, src);
+#elif defined(__aarch64__) || defined(_M_ARM64)
+  cj_orr(ctx, dst, src);
+#endif
+}
+
+static inline void cj_builder_neg(cj_ctx *ctx, cj_operand dst) {
+  if (!ctx) return;
+#if defined(__x86_64__) || defined(_M_X64)
+  cj_neg(ctx, dst);
+#elif defined(__aarch64__) || defined(_M_ARM64)
+  cj_neg(ctx, dst, dst);
+#endif
+}
+
+static inline void cj_builder_mul(cj_ctx *ctx, cj_operand dst, cj_operand src) {
+  if (!ctx) return;
+#if defined(__x86_64__) || defined(_M_X64)
+  cj_imul(ctx, dst, src);
+#elif defined(__aarch64__) || defined(_M_ARM64)
+  cj_mul(ctx, dst, src);
 #endif
 }

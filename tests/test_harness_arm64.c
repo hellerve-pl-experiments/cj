@@ -1645,6 +1645,67 @@ static void test_cas_basic(void) {
   destroy_cj_ctx(cj);
 }
 
+static void test_lsr_immediate(void) {
+  cj_ctx *cj = create_cj_ctx();
+
+  cj_operand x0 = cj_make_register("x0");
+
+  cj_lsr(cj, x0, cj_make_constant(3));
+  cj_ret(cj);
+
+  typedef uint64_t (*fn_t)(uint64_t);
+  fn_t fn = (fn_t)create_cj_fn(cj);
+
+  assert(fn(0x800) == 0x100);
+  assert(fn(64) == 8);
+
+  destroy_cj_fn(cj, (cj_fn)fn);
+  destroy_cj_ctx(cj);
+}
+
+static void test_asr_immediate(void) {
+  cj_ctx *cj = create_cj_ctx();
+
+  cj_operand x0 = cj_make_register("x0");
+
+  cj_asr(cj, x0, cj_make_constant(2));
+  cj_ret(cj);
+
+  typedef int64_t (*fn_t)(int64_t);
+  fn_t fn = (fn_t)create_cj_fn(cj);
+
+  assert(fn(-16) == -4);
+  assert(fn(-1) == -1);
+  assert(fn(16) == 4);
+
+  destroy_cj_fn(cj, (cj_fn)fn);
+  destroy_cj_ctx(cj);
+}
+
+static void test_cset_backend(void) {
+  cj_ctx *cj = create_cj_ctx();
+
+  cj_operand x0 = cj_make_register("x0");
+  cj_operand x1 = cj_make_register("x1");
+
+  /* cmp x0, x1; cset x0, LT (ARM64 cond code 11 = LT) */
+  cj_cmp(cj, x0, x1);
+  /* ARM64 CSET takes the *inverted* condition: CSET Xd, LT → CSINC Xd, XZR, XZR, GE
+     ARM64 GE = condition code 10 */
+  cj_cset(cj, x0, cj_make_constant(10));
+  cj_ret(cj);
+
+  typedef uint64_t (*fn_t)(int64_t, int64_t);
+  fn_t fn = (fn_t)create_cj_fn(cj);
+
+  assert(fn(3, 5) == 1);   /* 3 < 5 → true */
+  assert(fn(5, 3) == 0);   /* 5 < 3 → false */
+  assert(fn(4, 4) == 0);   /* 4 == 4 → false */
+
+  destroy_cj_fn(cj, (cj_fn)fn);
+  destroy_cj_ctx(cj);
+}
+
 int main(void) {
   test_mov_returns_second_argument();
   puts("mov ok");
@@ -1778,6 +1839,14 @@ int main(void) {
   // More atomics
   test_cas_basic();
   puts("cas ok");
+
+  // Immediate shift and cset (encoder fixes)
+  test_lsr_immediate();
+  puts("lsr imm ok");
+  test_asr_immediate();
+  puts("asr imm ok");
+  test_cset_backend();
+  puts("cset ok");
 
   return 0;
 }
