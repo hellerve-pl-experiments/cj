@@ -765,12 +765,20 @@ static inline void cj_builder_shl(cj_ctx *ctx, cj_operand dst, int shift) {
 
 static inline void cj_builder_shr(cj_ctx *ctx, cj_operand dst, int shift) {
   if (!ctx || shift == 0) return;
+#if defined(__x86_64__) || defined(_M_X64)
+  cj_shr(ctx, dst, cj_make_constant((uint64_t)shift));
+#elif defined(__aarch64__) || defined(_M_ARM64)
   cj_lsr(ctx, dst, cj_make_constant((uint64_t)shift));
+#endif
 }
 
 static inline void cj_builder_sar(cj_ctx *ctx, cj_operand dst, int shift) {
   if (!ctx || shift == 0) return;
+#if defined(__x86_64__) || defined(_M_X64)
+  cj_sar(ctx, dst, cj_make_constant((uint64_t)shift));
+#elif defined(__aarch64__) || defined(_M_ARM64)
   cj_asr(ctx, dst, cj_make_constant((uint64_t)shift));
+#endif
 }
 
 static inline void cj_builder_cset(cj_ctx *ctx, cj_operand dst, cj_condition cond) {
