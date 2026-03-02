@@ -217,8 +217,8 @@ static void test_sar(void) {
   fn1_t fn = (fn1_t)create_cj_fn(cj);
   assert(fn);
   assert(fn(-16) == -4);
-  assert(fn(-1) == -1);  /* all-ones stays all-ones */
-  assert(fn(16) == 4);   /* positive values shift normally */
+  assert(fn(-1) == -1); /* all-ones stays all-ones */
+  assert(fn(16) == 4);  /* positive values shift normally */
 
   destroy_cj_fn(cj, (cj_fn)fn);
   destroy_cj_ctx(cj);
@@ -239,10 +239,10 @@ static void test_cset(void) {
 
   fn2_t fn = (fn2_t)create_cj_fn(cj);
   assert(fn);
-  assert(fn(3, 5) == 1);   /* 3 < 5 → true */
-  assert(fn(5, 3) == 0);   /* 5 < 3 → false */
-  assert(fn(4, 4) == 0);   /* 4 < 4 → false */
-  assert(fn(-1, 1) == 1);  /* -1 < 1 → true (signed) */
+  assert(fn(3, 5) == 1);  /* 3 < 5 → true */
+  assert(fn(5, 3) == 0);  /* 5 < 3 → false */
+  assert(fn(4, 4) == 0);  /* 4 < 4 → false */
+  assert(fn(-1, 1) == 1); /* -1 < 1 → true (signed) */
 
   destroy_cj_fn(cj, (cj_fn)fn);
   destroy_cj_ctx(cj);

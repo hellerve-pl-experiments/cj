@@ -1698,9 +1698,9 @@ static void test_cset_backend(void) {
   typedef uint64_t (*fn_t)(int64_t, int64_t);
   fn_t fn = (fn_t)create_cj_fn(cj);
 
-  assert(fn(3, 5) == 1);   /* 3 < 5 → true */
-  assert(fn(5, 3) == 0);   /* 5 < 3 → false */
-  assert(fn(4, 4) == 0);   /* 4 == 4 → false */
+  assert(fn(3, 5) == 1); /* 3 < 5 → true */
+  assert(fn(5, 3) == 0); /* 5 < 3 → false */
+  assert(fn(4, 4) == 0); /* 4 == 4 → false */
 
   destroy_cj_fn(cj, (cj_fn)fn);
   destroy_cj_ctx(cj);

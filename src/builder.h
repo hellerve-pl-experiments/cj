@@ -664,23 +664,57 @@ static inline const char *builder_x86_reg8(const char *name) {
 
 static inline void builder_x86_setcc(cj_ctx *ctx, cj_operand r8, cj_condition cond) {
   switch (cond) {
-  case CJ_COND_O:  cj_seto(ctx, r8);   break;
-  case CJ_COND_NO: cj_setno(ctx, r8);  break;
-  case CJ_COND_B:  cj_setb(ctx, r8);   break;
-  case CJ_COND_NB: cj_setnb(ctx, r8);  break;
-  case CJ_COND_Z:  cj_setz(ctx, r8);   break;
-  case CJ_COND_NZ: cj_setnz(ctx, r8);  break;
-  case CJ_COND_BE: cj_setbe(ctx, r8);  break;
-  case CJ_COND_A:  cj_seta(ctx, r8);   break;
-  case CJ_COND_S:  cj_sets(ctx, r8);   break;
-  case CJ_COND_NS: cj_setns(ctx, r8);  break;
-  case CJ_COND_P:  cj_setp(ctx, r8);   break;
-  case CJ_COND_NP: cj_setnp(ctx, r8);  break;
-  case CJ_COND_L:  cj_setl(ctx, r8);   break;
-  case CJ_COND_GE: cj_setge(ctx, r8);  break;
-  case CJ_COND_LE: cj_setle(ctx, r8);  break;
-  case CJ_COND_G:  cj_setg(ctx, r8);   break;
-  default: assert(0 && "unsupported condition for setcc"); break;
+  case CJ_COND_O:
+    cj_seto(ctx, r8);
+    break;
+  case CJ_COND_NO:
+    cj_setno(ctx, r8);
+    break;
+  case CJ_COND_B:
+    cj_setb(ctx, r8);
+    break;
+  case CJ_COND_NB:
+    cj_setnb(ctx, r8);
+    break;
+  case CJ_COND_Z:
+    cj_setz(ctx, r8);
+    break;
+  case CJ_COND_NZ:
+    cj_setnz(ctx, r8);
+    break;
+  case CJ_COND_BE:
+    cj_setbe(ctx, r8);
+    break;
+  case CJ_COND_A:
+    cj_seta(ctx, r8);
+    break;
+  case CJ_COND_S:
+    cj_sets(ctx, r8);
+    break;
+  case CJ_COND_NS:
+    cj_setns(ctx, r8);
+    break;
+  case CJ_COND_P:
+    cj_setp(ctx, r8);
+    break;
+  case CJ_COND_NP:
+    cj_setnp(ctx, r8);
+    break;
+  case CJ_COND_L:
+    cj_setl(ctx, r8);
+    break;
+  case CJ_COND_GE:
+    cj_setge(ctx, r8);
+    break;
+  case CJ_COND_LE:
+    cj_setle(ctx, r8);
+    break;
+  case CJ_COND_G:
+    cj_setg(ctx, r8);
+    break;
+  default:
+    assert(0 && "unsupported condition for setcc");
+    break;
   }
 }
 
@@ -690,22 +724,22 @@ static inline void builder_x86_setcc(cj_ctx *ctx, cj_operand r8, cj_condition co
    Index = cj_condition value (x86-ordered), value = ARM64 code. */
 static inline int builder_arm64_cond_code(cj_condition cond) {
   static const int table[16] = {
-    6,   /* CJ_COND_O  (0)  → VS  (6)  */
-    7,   /* CJ_COND_NO (1)  → VC  (7)  */
-    3,   /* CJ_COND_B  (2)  → CC  (3)  */
-    2,   /* CJ_COND_NB (3)  → CS  (2)  */
-    0,   /* CJ_COND_Z  (4)  → EQ  (0)  */
-    1,   /* CJ_COND_NZ (5)  → NE  (1)  */
-    9,   /* CJ_COND_BE (6)  → LS  (9)  */
-    8,   /* CJ_COND_A  (7)  → HI  (8)  */
-    4,   /* CJ_COND_S  (8)  → MI  (4)  */
-    5,   /* CJ_COND_NS (9)  → PL  (5)  */
-    6,   /* CJ_COND_P  (10) → VS  (6)  */
-    7,   /* CJ_COND_NP (11) → VC  (7)  */
-    11,  /* CJ_COND_L  (12) → LT  (11) */
-    10,  /* CJ_COND_GE (13) → GE  (10) */
-    13,  /* CJ_COND_LE (14) → LE  (13) */
-    12,  /* CJ_COND_G  (15) → GT  (12) */
+      6,  /* CJ_COND_O  (0)  → VS  (6)  */
+      7,  /* CJ_COND_NO (1)  → VC  (7)  */
+      3,  /* CJ_COND_B  (2)  → CC  (3)  */
+      2,  /* CJ_COND_NB (3)  → CS  (2)  */
+      0,  /* CJ_COND_Z  (4)  → EQ  (0)  */
+      1,  /* CJ_COND_NZ (5)  → NE  (1)  */
+      9,  /* CJ_COND_BE (6)  → LS  (9)  */
+      8,  /* CJ_COND_A  (7)  → HI  (8)  */
+      4,  /* CJ_COND_S  (8)  → MI  (4)  */
+      5,  /* CJ_COND_NS (9)  → PL  (5)  */
+      6,  /* CJ_COND_P  (10) → VS  (6)  */
+      7,  /* CJ_COND_NP (11) → VC  (7)  */
+      11, /* CJ_COND_L  (12) → LT  (11) */
+      10, /* CJ_COND_GE (13) → GE  (10) */
+      13, /* CJ_COND_LE (14) → LE  (13) */
+      12, /* CJ_COND_G  (15) → GT  (12) */
   };
   return table[cond & 0xf];
 }
@@ -723,11 +757,8 @@ static inline void cj_builder_shl(cj_ctx *ctx, cj_operand dst, int shift) {
   int immr = (-shift) & (size - 1);
   int imms = size - 1 - shift;
   uint32_t base = is64 ? 0xD3400000u : 0x53000000u;
-  uint32_t instr = base
-      | (uint32_t)(rd & 0x1f)
-      | ((uint32_t)(rd & 0x1f) << 5)
-      | ((uint32_t)(imms & 0x3f) << 10)
-      | ((uint32_t)(immr & 0x3f) << 16);
+  uint32_t instr = base | (uint32_t)(rd & 0x1f) | ((uint32_t)(rd & 0x1f) << 5) |
+                   ((uint32_t)(imms & 0x3f) << 10) | ((uint32_t)(immr & 0x3f) << 16);
   cj_add_u32(ctx, instr);
 #endif
 }
